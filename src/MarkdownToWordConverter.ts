@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it';
 import htmlToDocx from 'html-to-docx';
+import * as fs from 'fs/promises';
 
 /**
  * Options for the Markdown to Word conversion process.
@@ -85,7 +86,6 @@ export class MarkdownToWordConverter {
    * @returns A Promise that resolves when the file is written.
    */
   async saveToFile(buffer: Buffer, filePath: string): Promise<void> {
-    const fs = require('fs/promises');
     await fs.writeFile(filePath, buffer);
   }
 }

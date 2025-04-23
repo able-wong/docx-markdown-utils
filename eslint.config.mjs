@@ -16,6 +16,9 @@ const compat = new FlatCompat({
 });
 
 export default [
+    {
+      ignores: ["tests/**"],
+    },
     ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"),
     {
         plugins: {
@@ -43,8 +46,5 @@ export default [
             "prettier/prettier": "error",
         },
 
-        linterOptions: {
-            ignorePatterns: ["tests/**"],
-        },
     },
 ];
