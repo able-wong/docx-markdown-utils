@@ -1,0 +1,14 @@
+# Node
+node_modules/
+
+# Build output
+dist/
+
+# Test coverage
+coverage/
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log

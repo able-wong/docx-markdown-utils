@@ -1,0 +1,2 @@
+# Ignore all markdown files in the tests/resources/markdown directory
+/tests/resources/**

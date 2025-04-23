@@ -1,0 +1,15 @@
+# Exclude test files and folders
+/tests/
+*.test.ts
+*.test.js
+# Exclude editor and config files
+.vscode/
+babel.config.js
+eslint.config.mjs
+jest.config.js
+tsconfig.json
+# Exclude markdown and log files
+*.md
+*.log
+# Exclude dist if you build before publish, otherwise remove this line
+dist/
