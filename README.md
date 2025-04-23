@@ -2,12 +2,12 @@
 
 [![Lint and Test](https://github.com/able-wong/docx-markdown-utils/actions/workflows/lint_and_test.yml/badge.svg)](https://github.com/able-wong/docx-markdown-utils/actions/workflows/lint_and_test.yml)
 
-A Node.js library for converting between Microsoft Word (.docx) documents and Markdown files. Provides two main classes:
+A Node.js library for converting between Microsoft Word (.docx) documents and [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/). Provides two main classes:
 
 - `WordToMarkdownConverter`: Converts Word documents to Markdown.
 - `MarkdownToWordConverter`: Converts Markdown files to Word documents.
 
-> **Note:** This library is tested in Node.js environments only. Browser support is not provided.
+> **Note:** This library is tested in Node.js environments only. Browser support is not currently provided, but adding it should not be difficult.
 
 ## Installation
 

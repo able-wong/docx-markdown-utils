@@ -8,11 +8,14 @@ babel.config.js
 eslint.config.mjs
 jest.config.js
 tsconfig.json
-# Exclude markdown and log files
-*.md
+.prettierignore
+.prettierrc
+# Exclude log files but include essential markdown files
 *.log
-# Exclude dist if you build before publish, otherwise remove this line
-dist/
+!README.md
+!LICENSE
+# Exclude source files as we publish compiled code from dist/
+/src/
 # Exclude coverage reports
 coverage/
 # Exclude .npmrc if you publish the package
@@ -21,6 +24,8 @@ coverage/
 .gitignore
 # Exclude .git if you publish the package
 .git/
+.github/
+# Exclude .husky if you publish the package
 .husky/
 # Exclude .DS_Store files if you publish the package
 .DS_Store
