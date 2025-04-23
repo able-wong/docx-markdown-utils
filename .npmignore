@@ -13,3 +13,16 @@ tsconfig.json
 *.log
 # Exclude dist if you build before publish, otherwise remove this line
 dist/
+# Exclude coverage reports
+coverage/
+# Exclude .npmrc if you publish the package
+.npmrc
+# Exclude .gitignore if you publish the package
+.gitignore
+# Exclude .git if you publish the package
+.git/
+.husky/
+# Exclude .DS_Store files if you publish the package
+.DS_Store
+# Exclude .env files if you publish the package
+.env
