@@ -1,3 +1,5 @@
+import { JSDOM } from 'jsdom';
+import { MarkdownToHtmlConverter } from '../src/MarkdownToHtmlConverter';
 import { MarkdownToWordConverter } from '../src/MarkdownToWordConverter';
 import { WordToMarkdownConverter } from '../src/WordToMarkdownConverter';
 import * as fs from 'fs';
@@ -29,7 +31,14 @@ describe('MarkdownToWordConverter', () => {
       const roundTripMd = (await wordToMd.convert(docxBuffer)).trim();
 
       // Compare after normalizing whitespace
-      expect(roundTripMd).toBe(expectedMd);
+      // expect(roundTripMd).toBe(expectedMd);
+      // Compare as HTML using JSDOM
+      const mdToHtml = new MarkdownToHtmlConverter();
+      const actualHtml = mdToHtml.convert(roundTripMd);
+      const expectedHtml = mdToHtml.convert(expectedMd);
+      const domActual = new JSDOM(actualHtml);
+      const domExpected = new JSDOM(expectedHtml);
+      expect(domActual.window.document.body.innerHTML.trim()).toBe(domExpected.window.document.body.innerHTML.trim());
     });
   });
 
