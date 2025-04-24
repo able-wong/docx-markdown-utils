@@ -28,6 +28,7 @@ export class MarkdownToHtmlConverter {
     // Optionally, you can add custom rules or plugins here if needed
     // This is a workaround for the issue with html-to-docx not handling <em> correctly
     // See: https://github.com/privateOmega/html-to-docx/pull/226
+    // TODO: Investigate and implement strikethrough support for html-to-docx.
     // btw, html-to-docx does not support strikethrough but there is no fix at the moment.
     this.mdIt.renderer.rules.em_open = () => '<i>';
     this.mdIt.renderer.rules.em_close = () => '</i>';
