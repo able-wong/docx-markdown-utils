@@ -14,9 +14,6 @@ describe('MarkdownToHtmlConverter', () => {
       const md = fs.readFileSync(inputPath, 'utf-8');
       const converter = new MarkdownToHtmlConverter();
       const html = converter.convert(md);
-      if (!fs.existsSync(expectedHtmlPath)) {
-        fs.writeFileSync(expectedHtmlPath, html); // Populate expected output for user to review
-      }
       const expectedHtml = fs.readFileSync(expectedHtmlPath, 'utf-8');
       expect(html.trim()).toBe(expectedHtml.trim());
     });
