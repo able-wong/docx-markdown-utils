@@ -1,6 +1,7 @@
 import { MarkdownToHtmlConverter } from '../src/MarkdownToHtmlConverter';
 import * as fs from 'fs';
 import * as path from 'path';
+import { JSDOM } from 'jsdom';
 
 describe('MarkdownToHtmlConverter', () => {
   const resourcesDir = path.join(__dirname, 'resources', 'markdown');
@@ -23,7 +24,9 @@ describe('MarkdownToHtmlConverter', () => {
     const md = '# Hello\n\nThis is **bold** and _italic_.';
     const converter = new MarkdownToHtmlConverter();
     const html = converter.convert(md);
-    // Compare with actual HTML output
-    expect(html.trim()).toBe('<h1>Hello</h1>\n<p>This is <strong>bold</strong> and <i>italic</i>.</p>');
+    const expectedHtml = '<h1>Hello</h1>\n<p>This is <strong>bold</strong> and <i>italic</i>.</p>';
+    const domActual = new JSDOM(html);
+    const domExpected = new JSDOM(expectedHtml);
+    expect(domActual.window.document.body.innerHTML.trim()).toBe(domExpected.window.document.body.innerHTML.trim());
   });
 });
