@@ -52,7 +52,7 @@
     "html-to-docx": "^1.8.0",
     "mammoth": "^1.9.0",
     "markdown-it": "^14.1.0",
-    "markdownlint": "^0.37.4",
+    "markdownlint": "^0.38.0",
     "markdownlint-rule-helpers": "^0.28.0",
     "node-html-parser": "^7.0.1",
     "turndown": "^7.1.3"
