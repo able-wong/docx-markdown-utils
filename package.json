@@ -46,7 +46,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@joplin/turndown-plugin-gfm": "^1.0.61",
+    "@joplin/turndown-plugin-gfm": "^1.0.62",
     "@types/html-to-docx": "^1.8.0",
     "@types/markdown-it": "^14.1.2",
     "html-to-docx": "^1.8.0",
