@@ -1,6 +1,6 @@
 {
   "name": "docx-markdown-utils",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Utilities for converting between DOCX and Markdown formats",
   "keywords": [
     "markdown",
@@ -13,16 +13,36 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+      "node": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      },
+      "browser": {
+        "import": "./dist/browser.js",
+        "types": "./dist/browser.d.ts"
+      },
+      "default": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      }
+    },
+    "./browser": {
+      "import": "./dist/browser.js",
+      "types": "./dist/browser.d.ts"
+    },
+    "./bundle": "./dist/browser.bundle.js"
   },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc",
+    "test:node": "vitest run --config vitest.node.config.ts",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:dual": "npm run test:node && npm run test:browser",
+    "serve": "python3 -m http.server 8000",
+    "build": "tsc && npm run build:bundle",
+    "build:bundle": "rollup -c",
     "lint": "eslint src --ext .ts,.js",
     "lint:fix": "eslint src --ext .ts,.js --fix",
     "prepublishOnly": "npm run build",
@@ -43,10 +63,15 @@
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^5.2.6",
     "globals": "^16.0.0",
+    "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
+    "rollup": "^4.28.1",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
