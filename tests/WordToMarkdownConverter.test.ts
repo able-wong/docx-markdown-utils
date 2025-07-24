@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { WordToMarkdownConverter } from '../src/WordToMarkdownConverter';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -32,7 +33,7 @@ describe('WordToMarkdownConverter', () => {
         tc !== null,
     );
 
-  testCases.forEach(({ name, input, expected }) => {
+  testCases.forEach(({ input, expected }) => {
     it(`should convert ${input} using 'path' to match ${expected}`, async () => {
       const inputPath = path.join(inputDir, input);
       const expectedPath = path.join(outputDir, expected);
@@ -44,7 +45,7 @@ describe('WordToMarkdownConverter', () => {
     });
   });
 
-  testCases.forEach(({ name, input, expected }) => {
+  testCases.forEach(({ input, expected }) => {
     it(`should convert ${input} using 'buffer' to match ${expected}`, async () => {
       const inputPath = path.join(inputDir, input);
       const expectedPath = path.join(outputDir, expected);

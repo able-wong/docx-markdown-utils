@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { MarkdownToHtmlConverter } from '../src/MarkdownToHtmlConverter';
 import { MarkdownToWordConverter } from '../src/MarkdownToWordConverter';
@@ -15,7 +16,6 @@ describe('MarkdownToWordConverter', () => {
   // Due to libraries restriction, some details or additions are different.
   const inputFiles = fs.readdirSync(inputDir).filter((f) => f.endsWith('.md'));
   inputFiles.forEach((inputFile) => {
-    const base = path.parse(inputFile).name;
     it(`should convert ${inputFile} to docx and back to markdown with round-trip fidelity`, async () => {
       const inputPath = path.join(inputDir, inputFile);
       const roundtripPath = path.join(roundtripDir, inputFile);
@@ -38,7 +38,9 @@ describe('MarkdownToWordConverter', () => {
       const expectedHtml = mdToHtml.convert(expectedMd);
       const domActual = new JSDOM(actualHtml);
       const domExpected = new JSDOM(expectedHtml);
-      expect(domActual.window.document.body.innerHTML.trim()).toBe(domExpected.window.document.body.innerHTML.trim());
+      expect(domActual.window.document.body.innerHTML.trim()).toBe(
+        domExpected.window.document.body.innerHTML.trim(),
+      );
     });
   });
 

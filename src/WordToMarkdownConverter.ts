@@ -1,9 +1,13 @@
-import TurndownService from 'turndown';
-import * as turndownPluginGfm from '@joplin/turndown-plugin-gfm';
+import { unified } from 'unified';
+import rehypeParse from 'rehype-parse';
+import rehypeRemark from 'rehype-remark';
+import remarkGfm from 'remark-gfm';
+import remarkStringify from 'remark-stringify';
+import remarkLint from 'remark-lint';
+import remarkPresetLintRecommended from 'remark-preset-lint-recommended';
+import remarkParse from 'remark-parse';
 import * as mammoth from 'mammoth';
 import { parse } from 'node-html-parser';
-import { lint as lintsync } from 'markdownlint/sync';
-import { applyFixes } from 'markdownlint';
 
 /**
  * Options for the conversion process.
@@ -75,32 +79,46 @@ export class WordToMarkdownConverter {
   }
 
   /**
-   * Converts an HTML string to Markdown using TurndownService.
-   * Applies default options and GFM plugin.
+   * Converts an HTML string to Markdown using unified processor.
+   * Applies GFM support and formatting options.
    * @param html - The HTML string to convert.
-   * @param options - Custom Turndown options.
+   * @param options - Custom formatting options.
    * @returns The converted Markdown string.
    */
-  private htmlToMd(html: string, options: object = {}): string {
-    const turndownService = new TurndownService({
-      ...options,
-      ...this.defaultTurndownOptions,
-    });
-    // use GFM plugic (GitHub Flavored Markdown) thats supports
-    // strikethrough, tables, task lists, and more
-    turndownService.use(turndownPluginGfm.gfm);
-    return turndownService.turndown(html).trim();
+  private async htmlToMd(html: string, options: object = {}): Promise<string> {
+    const result = await unified()
+      .use(rehypeParse, { fragment: true }) // Parse HTML fragment
+      .use(rehypeRemark) // Convert HTML → Markdown AST
+      .use(remarkGfm) // GitHub Flavored Markdown support
+      .use(remarkStringify, {
+        bullet: this.defaultTurndownOptions.bulletListMarker,
+        fences: this.defaultTurndownOptions.codeBlockStyle === 'fenced',
+        incrementListMarker: false,
+        ...options,
+      })
+      .process(html);
+
+    return String(result).trim();
   }
 
   /**
-   * Lints and automatically fixes common issues in a Markdown string
-   * using markdownlint.
-   * @param md - The Markdown string to lint and fix.
-   * @returns The cleaned Markdown string.
+   * Lint and format markdown content using unified processor.
+   * @param md - The Markdown string to lint and format.
+   * @returns A Promise resolving to the cleaned Markdown string.
    */
-  private lint(md: string): string {
-    const lintResult = lintsync({ strings: { md } });
-    return applyFixes(md, lintResult['md']).trim();
+  private async lint(md: string): Promise<string> {
+    const result = await unified()
+      .use(remarkParse) // Add the missing parser
+      .use(remarkLint)
+      .use(remarkPresetLintRecommended)
+      .use(remarkStringify, {
+        bullet: this.defaultTurndownOptions.bulletListMarker,
+        fences: this.defaultTurndownOptions.codeBlockStyle === 'fenced',
+        incrementListMarker: false,
+      })
+      .process(md);
+
+    return String(result).trim();
   }
 
   /**
@@ -131,8 +149,8 @@ export class WordToMarkdownConverter {
       options.mammoth,
     );
     const html = this.autoTableHeaders(mammothResult.value);
-    const md = this.htmlToMd(html, options.turndown);
-    const cleanedMd = this.lint(md);
+    const md = await this.htmlToMd(html, options.turndown);
+    const cleanedMd = await this.lint(md);
     return cleanedMd;
   }
 }
