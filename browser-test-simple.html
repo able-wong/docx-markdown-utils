@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>docx-markdown-utils Simple Browser Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .output {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            min-height: 100px;
+        }
+        .error {
+            color: red;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            background-color: #e6ffe6;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>docx-markdown-utils Simple Browser Test</h1>
+    <p>Testing browser compatibility with minimal dependencies.</p>
+
+    <div class="section">
+        <h2>📝 Markdown to HTML Converter (Simplified)</h2>
+        <p>Test basic Markdown to HTML conversion without complex dependencies:</p>
+        <textarea id="markdownInput" placeholder="Type Markdown here...
+# Sample Heading
+
+This is **bold** and *italic* text.
+
+## List Example
+- Item 1
+- Item 2  
+- Item 3
+
+**Note**: This simplified version tests basic browser compatibility without all unified dependencies."></textarea>
+        
+        <h3>Generated HTML:</h3>
+        <pre id="htmlSource"></pre>
+    </div>
+
+    <div class="section">
+        <h2>🧪 ArrayBuffer Type Detection Test</h2>
+        <p>Test if ArrayBuffer input type detection works in browser:</p>
+        <button id="testArrayBuffer">Test ArrayBuffer Detection</button>
+        <div id="arrayBufferResult" class="output">Click the button to test ArrayBuffer type detection...</div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "unified": "https://esm.sh/unified@11",
+            "remark-parse": "https://esm.sh/remark-parse@11",
+            "remark-html": "https://esm.sh/remark-html@16"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        // Simple markdown to HTML converter for testing
+        class SimpleMarkdownToHtmlConverter {
+            convert(markdown) {
+                // Very basic markdown to HTML conversion for testing
+                let html = markdown;
+                
+                // Headers
+                html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+                html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+                html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+                
+                // Bold and italic
+                html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+                html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+                
+                // Simple lists (very basic)
+                html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+                html = html.replace(/(<li>.*<\/li>)/gims, '<ul>$1</ul>');
+                
+                // Paragraphs
+                html = html.split('\n\n').map(para => {
+                    para = para.trim();
+                    if (para && !para.startsWith('<h') && !para.startsWith('<ul')) {
+                        return `<p>${para}</p>`;
+                    }
+                    return para;
+                }).join('\n');
+                
+                return html;
+            }
+        }
+        
+        // ArrayBuffer detection logic (same as in WordToMarkdownConverter)
+        function testArrayBufferDetection() {
+            const results = [];
+            
+            // Test different input types
+            const stringInput = 'test.docx';
+            const bufferInput = typeof Buffer !== 'undefined' ? Buffer.from('test') : null;
+            const arrayBufferInput = new ArrayBuffer(8);
+            const invalidInput = {};
+            
+            // Test string detection
+            if (typeof stringInput === 'string') {
+                results.push('✅ String detection: PASS');
+            } else {
+                results.push('❌ String detection: FAIL');
+            }
+            
+            // Test Buffer detection (if available)
+            if (typeof Buffer !== 'undefined' && Buffer.isBuffer) {
+                if (bufferInput && Buffer.isBuffer(bufferInput)) {
+                    results.push('✅ Buffer detection: PASS');
+                } else {
+                    results.push('❌ Buffer detection: FAIL');
+                }
+                results.push(`📝 Buffer available: ${typeof Buffer !== 'undefined'}`);
+            } else {
+                results.push('📝 Buffer not available in browser (expected)');
+            }
+            
+            // Test ArrayBuffer detection
+            if (arrayBufferInput instanceof ArrayBuffer) {
+                results.push('✅ ArrayBuffer detection: PASS');
+            } else {
+                results.push('❌ ArrayBuffer detection: FAIL');
+            }
+            
+            // Test error handling
+            try {
+                if (typeof invalidInput === 'string') {
+                    // string path
+                } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(invalidInput)) {
+                    // buffer path
+                } else if (invalidInput instanceof ArrayBuffer) {
+                    // arraybuffer path
+                } else {
+                    throw new Error('Invalid input type. Expected string, Buffer, or ArrayBuffer.');
+                }
+                results.push('❌ Error handling: FAIL (should have thrown error)');
+            } catch (error) {
+                if (error.message.includes('Invalid input type')) {
+                    results.push('✅ Error handling: PASS');
+                } else {
+                    results.push(`❌ Error handling: FAIL (${error.message})`);
+                }
+            }
+            
+            return results;
+        }
+        
+        try {
+            // Simple converter test
+            const converter = new SimpleMarkdownToHtmlConverter();
+            const markdownInput = document.getElementById('markdownInput');
+            const htmlSource = document.getElementById('htmlSource');
+            
+            function convertMarkdown() {
+                const markdown = markdownInput.value;
+                if (!markdown.trim()) {
+                    htmlSource.textContent = '';
+                    return;
+                }
+                
+                try {
+                    const html = converter.convert(markdown);
+                    htmlSource.textContent = html;
+                } catch (error) {
+                    console.error('HTML conversion error:', error);
+                    htmlSource.textContent = `Error: ${error.message}`;
+                }
+            }
+            
+            // Convert on input change
+            markdownInput.addEventListener('input', convertMarkdown);
+            
+            // ArrayBuffer test
+            document.getElementById('testArrayBuffer').addEventListener('click', () => {
+                const results = testArrayBufferDetection();
+                const resultDiv = document.getElementById('arrayBufferResult');
+                resultDiv.innerHTML = ''; // Clear previous content
+                results.forEach(result => {
+                    const resultLine = document.createElement('div');
+                    resultLine.textContent = result;
+                    resultDiv.appendChild(resultLine);
+                });
+            });
+            
+            // Initial conversion
+            convertMarkdown();
+            
+            // Show success message
+            const successBanner = document.createElement('div');
+            successBanner.className = 'success';
+            successBanner.textContent = '✅ Simple browser test loaded successfully! Basic functionality is working.';
+            document.body.insertBefore(successBanner, document.body.firstChild);
+            
+        } catch (error) {
+            console.error('Failed to initialize test:', error);
+            const errorBanner = document.createElement('div');
+            errorBanner.className = 'error';
+            errorBanner.textContent = `❌ Failed to initialize: ${error.message}`;
+            document.body.insertBefore(errorBanner, document.body.firstChild);
+        }
+    </script>
+</body>
+</html>

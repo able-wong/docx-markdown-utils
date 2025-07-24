@@ -122,27 +122,40 @@ export class WordToMarkdownConverter {
   }
 
   /**
-   * Converts a Word document (provided as a file path or Buffer) to Markdown.
+   * Converts a Word document (provided as a file path, Buffer, or ArrayBuffer) to Markdown.
    * The process involves:
    * 1. Converting the DOCX input to HTML using mammoth.js.
    * 2. Automatically detecting and setting table headers in the HTML.
    * 3. Converting the HTML to Markdown using the unified ecosystem with remark plugins.
    * 4. Linting and fixing the generated Markdown using remark-lint.
    *
-   * @param input - The path to the .docx file or an Buffer containing the file content.
+   * @param input - The path to the .docx file, a Buffer (Node.js), or an ArrayBuffer (browser) containing the file content.
    * @param options - Optional configuration for mammoth and remarkStringify.
    * @returns A Promise resolving to the cleaned Markdown string.
    * @throws Error if the conversion process fails.
    */
   async convert(
-    input: string | Buffer,
+    input: string | Buffer | ArrayBuffer,
     options: ConvertOptions = {},
   ): Promise<string> {
-    let inputObj: { path: string } | { buffer: Buffer };
+    let inputObj:
+      | { path: string }
+      | { buffer: Buffer }
+      | { arrayBuffer: ArrayBuffer };
     if (typeof input === 'string') {
       inputObj = { path: input };
-    } else {
+    } else if (
+      typeof Buffer !== 'undefined' &&
+      Buffer.isBuffer &&
+      Buffer.isBuffer(input)
+    ) {
       inputObj = { buffer: input };
+    } else if (input instanceof ArrayBuffer) {
+      inputObj = { arrayBuffer: input };
+    } else {
+      throw new Error(
+        'Invalid input type. Expected string, Buffer, or ArrayBuffer.',
+      );
     }
     const mammothResult = await mammoth.convertToHtml(
       inputObj,

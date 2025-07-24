@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
@@ -16,13 +17,15 @@
       "./node_modules/@types"
     ],
     "moduleResolution": "Node",
+    "allowImportingTsExtensions": false,
+    "noEmit": false,
     "isolatedModules": true
   },
   "include": [
     "src/**/*",
     "tests/**/*",
-    "vitest.config.ts",
-    "eslint.config.mjs"
+    "vitest.*.config.ts",
+    "rollup.config.js"
   ],
   "exclude": [
     "node_modules"
