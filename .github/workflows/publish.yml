@@ -19,7 +19,8 @@ jobs:
           node-version: '18' # Use a version compatible with your project (>=18 as per package.json)
           registry-url: 'https://registry.npmjs.org/'
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci || npm install
       - name: Build package
         run: npm run build # Ensure the package is built before publishing
       - name: Publish package
