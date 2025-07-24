@@ -7,8 +7,8 @@ import remarkHtml from 'remark-html';
  * Options for the Markdown to HTML conversion process.
  */
 interface MdToHtmlConvertOptions {
-  /** Options passed to remark-stringify for formatting. */
-  stringify?: object;
+  /** Options passed to remark-html for HTML formatting. */
+  html?: object;
 }
 
 export type { MdToHtmlConvertOptions };
@@ -40,7 +40,7 @@ export class MarkdownToHtmlConverter {
     const result = unified()
       .use(remarkParse) // Parse Markdown
       .use(remarkGfm) // GitHub Flavored Markdown support
-      .use(remarkHtml) // Convert to HTML
+      .use(remarkHtml, this.options.html || {}) // Convert to HTML with options
       .processSync(md);
 
     return String(result);

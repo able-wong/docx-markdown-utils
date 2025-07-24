@@ -21,6 +21,12 @@ A modern Node.js library for converting between Microsoft Word (.docx) documents
 
 > **Note:** This library is designed for Node.js environments only. Browser support is not currently provided.
 
+### Known Limitations
+
+- **Strikethrough in Round-trip Conversion**: When converting `~~strikethrough~~` markdown to DOCX and back to markdown, the strikethrough formatting is lost due to limitations in the underlying `html-to-docx` library. The text content is preserved but without formatting.
+- **Ordered List Numbering**: In round-trip conversion (Markdown → DOCX → Markdown), sequential ordered list numbering is lost. For example, `1.`, `2.`, `3.` becomes `1.`, `1.`, `1.`. List structure and content are preserved.
+- **Underline**: Underline formatting is not supported as it's not part of standard Markdown or GFM.
+
 ## Installation
 
 ```bash
@@ -85,7 +91,7 @@ console.log(html); // <h1>Hello, <strong>world</strong>!</h1>
 - `convert(input: string | Buffer, options?: ConvertOptions): Promise<string>`
   - Converts a DOCX file to Markdown
   - `input`: File path (string) or Buffer containing DOCX data
-  - `options`: Optional conversion options for turndown behavior
+  - `options`: Optional conversion options for remarkStringify behavior
 
 **Types:**
 

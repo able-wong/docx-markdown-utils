@@ -37,7 +37,13 @@ export class MarkdownToWordConverter {
    * @returns The converted HTML string.
    */
   private mdToHtml(md: string): string {
-    return this.htmlConverter.convert(md);
+    let html = this.htmlConverter.convert(md);
+
+    // html-to-docx expects older HTML tags, convert semantic tags
+    html = html.replace(/<em>/g, '<i>').replace(/<\/em>/g, '</i>');
+    html = html.replace(/<del>/g, '<s>').replace(/<\/del>/g, '</s>');
+
+    return html;
   }
 
   /**

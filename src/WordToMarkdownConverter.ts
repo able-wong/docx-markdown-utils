@@ -15,14 +15,14 @@ import { parse } from 'node-html-parser';
 interface ConvertOptions {
   /** Options passed directly to the mammoth library. */
   mammoth?: object;
-  /** Options passed directly to the turndown library. */
-  turndown?: object;
+  /** Options passed to remark-stringify for markdown formatting. */
+  remarkStringify?: object;
 }
 
 /**
- * Options specific to the Turndown service configuration.
+ * Internal options for configuring markdown formatting behavior.
  */
-interface TurndownOptions {
+interface MarkdownFormattingOptions {
   /** Specifies the heading style ('setext' for H1 and H2, 'atx' for all levels). */
   headingStyle?: 'setext' | 'atx';
   /** Specifies the code block style ('indented' or 'fenced'). */
@@ -31,12 +31,12 @@ interface TurndownOptions {
   bulletListMarker?: '*' | '-' | '+';
 }
 
-export type { ConvertOptions, TurndownOptions };
+export type { ConvertOptions };
 
 /**
  * Converts Microsoft Word documents (.docx) to Markdown format.
  * This utility class leverages mammoth.js for DOCX to HTML conversion
- * and Turndown for HTML to Markdown conversion, with additional
+ * and the unified ecosystem (remark/rehype) for HTML to Markdown conversion, with additional
  * features like automatic table header detection and Markdown linting.
  *
  * Example usage:
@@ -53,7 +53,7 @@ export type { ConvertOptions, TurndownOptions };
  * ```
  */
 export class WordToMarkdownConverter {
-  private defaultTurndownOptions: TurndownOptions = {
+  private defaultMarkdownOptions: MarkdownFormattingOptions = {
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
     bulletListMarker: '-',
@@ -91,8 +91,8 @@ export class WordToMarkdownConverter {
       .use(rehypeRemark) // Convert HTML → Markdown AST
       .use(remarkGfm) // GitHub Flavored Markdown support
       .use(remarkStringify, {
-        bullet: this.defaultTurndownOptions.bulletListMarker,
-        fences: this.defaultTurndownOptions.codeBlockStyle === 'fenced',
+        bullet: this.defaultMarkdownOptions.bulletListMarker,
+        fences: this.defaultMarkdownOptions.codeBlockStyle === 'fenced',
         incrementListMarker: false,
         ...options,
       })
@@ -112,8 +112,8 @@ export class WordToMarkdownConverter {
       .use(remarkLint)
       .use(remarkPresetLintRecommended)
       .use(remarkStringify, {
-        bullet: this.defaultTurndownOptions.bulletListMarker,
-        fences: this.defaultTurndownOptions.codeBlockStyle === 'fenced',
+        bullet: this.defaultMarkdownOptions.bulletListMarker,
+        fences: this.defaultMarkdownOptions.codeBlockStyle === 'fenced',
         incrementListMarker: false,
       })
       .process(md);
@@ -126,11 +126,11 @@ export class WordToMarkdownConverter {
    * The process involves:
    * 1. Converting the DOCX input to HTML using mammoth.js.
    * 2. Automatically detecting and setting table headers in the HTML.
-   * 3. Converting the HTML to Markdown using Turndown with GFM plugins.
-   * 4. Linting and fixing the generated Markdown using markdownlint.
+   * 3. Converting the HTML to Markdown using the unified ecosystem with remark plugins.
+   * 4. Linting and fixing the generated Markdown using remark-lint.
    *
    * @param input - The path to the .docx file or an Buffer containing the file content.
-   * @param options - Optional configuration for mammoth and turndown.
+   * @param options - Optional configuration for mammoth and remarkStringify.
    * @returns A Promise resolving to the cleaned Markdown string.
    * @throws Error if the conversion process fails.
    */
@@ -149,7 +149,7 @@ export class WordToMarkdownConverter {
       options.mammoth,
     );
     const html = this.autoTableHeaders(mammothResult.value);
-    const md = await this.htmlToMd(html, options.turndown);
+    const md = await this.htmlToMd(html, options.remarkStringify);
     const cleanedMd = await this.lint(md);
     return cleanedMd;
   }
