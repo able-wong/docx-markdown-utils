@@ -113,10 +113,7 @@ console.log('Hello World');
 
 ~~Strikethrough~~ text."></textarea>
         
-        <h3>HTML Preview:</h3>
-        <div id="htmlPreview" class="output"></div>
-        
-        <h3>Raw HTML:</h3>
+        <h3>Generated HTML:</h3>
         <pre id="htmlSource"></pre>
     </div>
 
@@ -175,33 +172,21 @@ console.log('Hello World');
             
             // Markdown to HTML functionality
             const markdownInput = document.getElementById('markdownInput');
-            const htmlPreview = document.getElementById('htmlPreview');
             const htmlSource = document.getElementById('htmlSource');
             
             function convertMarkdown() {
                 const markdown = markdownInput.value;
                 if (!markdown.trim()) {
-                    const emptyMessage = document.createElement('em');
-                    emptyMessage.textContent = 'No markdown input';
-                    htmlPreview.innerHTML = '';
-                    htmlPreview.appendChild(emptyMessage);
                     htmlSource.textContent = '';
                     return;
                 }
                 
                 try {
                     const html = mdToHtmlConverter.convert(markdown);
-                    // Only show HTML as code, don't render it
-                    htmlPreview.textContent = html;
                     htmlSource.textContent = html;
                 } catch (error) {
                     console.error('HTML conversion error:', error);
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'error';
-                    errorMessage.textContent = `Error: ${error.message}`;
-                    htmlPreview.innerHTML = '';
-                    htmlPreview.appendChild(errorMessage);
-                    htmlSource.textContent = '';
+                    htmlSource.textContent = `Error: ${error.message}`;
                 }
             }
             

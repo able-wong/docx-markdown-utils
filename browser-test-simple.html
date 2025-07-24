@@ -81,10 +81,7 @@ This is **bold** and *italic* text.
 
 **Note**: This simplified version tests basic browser compatibility without all unified dependencies."></textarea>
         
-        <h3>HTML Preview:</h3>
-        <div id="htmlPreview" class="output"></div>
-        
-        <h3>Raw HTML:</h3>
+        <h3>Generated HTML:</h3>
         <pre id="htmlSource"></pre>
     </div>
 
@@ -201,34 +198,21 @@ This is **bold** and *italic* text.
             // Simple converter test
             const converter = new SimpleMarkdownToHtmlConverter();
             const markdownInput = document.getElementById('markdownInput');
-            const htmlPreview = document.getElementById('htmlPreview');
             const htmlSource = document.getElementById('htmlSource');
             
             function convertMarkdown() {
                 const markdown = markdownInput.value;
                 if (!markdown.trim()) {
-                    const emptyMessage = document.createElement('em');
-                    emptyMessage.textContent = 'No markdown input';
-                    htmlPreview.innerHTML = '';
-                    htmlPreview.appendChild(emptyMessage);
                     htmlSource.textContent = '';
                     return;
                 }
                 
                 try {
                     const html = converter.convert(markdown);
-                    // Display HTML as rendered content in preview (this is safe since we control the converter)
-                    htmlPreview.innerHTML = html;
-                    // Show raw HTML as code
                     htmlSource.textContent = html;
                 } catch (error) {
                     console.error('HTML conversion error:', error);
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'error';
-                    errorMessage.textContent = `Error: ${error.message}`;
-                    htmlPreview.innerHTML = '';
-                    htmlPreview.appendChild(errorMessage);
-                    htmlSource.textContent = '';
+                    htmlSource.textContent = `Error: ${error.message}`;
                 }
             }
             
