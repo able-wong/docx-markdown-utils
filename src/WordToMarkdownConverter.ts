@@ -1,9 +1,13 @@
-import TurndownService from 'turndown';
-import * as turndownPluginGfm from '@joplin/turndown-plugin-gfm';
+import { unified } from 'unified';
+import rehypeParse from 'rehype-parse';
+import rehypeRemark from 'rehype-remark';
+import remarkGfm from 'remark-gfm';
+import remarkStringify from 'remark-stringify';
+import remarkLint from 'remark-lint';
+import remarkPresetLintRecommended from 'remark-preset-lint-recommended';
+import remarkParse from 'remark-parse';
 import * as mammoth from 'mammoth';
 import { parse } from 'node-html-parser';
-import { lint as lintsync } from 'markdownlint/sync';
-import { applyFixes } from 'markdownlint';
 
 /**
  * Options for the conversion process.
@@ -11,14 +15,14 @@ import { applyFixes } from 'markdownlint';
 interface ConvertOptions {
   /** Options passed directly to the mammoth library. */
   mammoth?: object;
-  /** Options passed directly to the turndown library. */
-  turndown?: object;
+  /** Options passed to remark-stringify for markdown formatting. */
+  remarkStringify?: object;
 }
 
 /**
- * Options specific to the Turndown service configuration.
+ * Internal options for configuring markdown formatting behavior.
  */
-interface TurndownOptions {
+interface MarkdownFormattingOptions {
   /** Specifies the heading style ('setext' for H1 and H2, 'atx' for all levels). */
   headingStyle?: 'setext' | 'atx';
   /** Specifies the code block style ('indented' or 'fenced'). */
@@ -27,12 +31,12 @@ interface TurndownOptions {
   bulletListMarker?: '*' | '-' | '+';
 }
 
-export type { ConvertOptions, TurndownOptions };
+export type { ConvertOptions };
 
 /**
  * Converts Microsoft Word documents (.docx) to Markdown format.
  * This utility class leverages mammoth.js for DOCX to HTML conversion
- * and Turndown for HTML to Markdown conversion, with additional
+ * and the unified ecosystem (remark/rehype) for HTML to Markdown conversion, with additional
  * features like automatic table header detection and Markdown linting.
  *
  * Example usage:
@@ -49,7 +53,7 @@ export type { ConvertOptions, TurndownOptions };
  * ```
  */
 export class WordToMarkdownConverter {
-  private defaultTurndownOptions: TurndownOptions = {
+  private defaultMarkdownOptions: MarkdownFormattingOptions = {
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
     bulletListMarker: '-',
@@ -75,32 +79,46 @@ export class WordToMarkdownConverter {
   }
 
   /**
-   * Converts an HTML string to Markdown using TurndownService.
-   * Applies default options and GFM plugin.
+   * Converts an HTML string to Markdown using unified processor.
+   * Applies GFM support and formatting options.
    * @param html - The HTML string to convert.
-   * @param options - Custom Turndown options.
+   * @param options - Custom formatting options.
    * @returns The converted Markdown string.
    */
-  private htmlToMd(html: string, options: object = {}): string {
-    const turndownService = new TurndownService({
-      ...options,
-      ...this.defaultTurndownOptions,
-    });
-    // use GFM plugic (GitHub Flavored Markdown) thats supports
-    // strikethrough, tables, task lists, and more
-    turndownService.use(turndownPluginGfm.gfm);
-    return turndownService.turndown(html).trim();
+  private async htmlToMd(html: string, options: object = {}): Promise<string> {
+    const result = await unified()
+      .use(rehypeParse, { fragment: true }) // Parse HTML fragment
+      .use(rehypeRemark) // Convert HTML → Markdown AST
+      .use(remarkGfm) // GitHub Flavored Markdown support
+      .use(remarkStringify, {
+        bullet: this.defaultMarkdownOptions.bulletListMarker,
+        fences: this.defaultMarkdownOptions.codeBlockStyle === 'fenced',
+        incrementListMarker: false,
+        ...options,
+      })
+      .process(html);
+
+    return String(result).trim();
   }
 
   /**
-   * Lints and automatically fixes common issues in a Markdown string
-   * using markdownlint.
-   * @param md - The Markdown string to lint and fix.
-   * @returns The cleaned Markdown string.
+   * Lint and format markdown content using unified processor.
+   * @param md - The Markdown string to lint and format.
+   * @returns A Promise resolving to the cleaned Markdown string.
    */
-  private lint(md: string): string {
-    const lintResult = lintsync({ strings: { md } });
-    return applyFixes(md, lintResult['md']).trim();
+  private async lint(md: string): Promise<string> {
+    const result = await unified()
+      .use(remarkParse) // Add the missing parser
+      .use(remarkLint)
+      .use(remarkPresetLintRecommended)
+      .use(remarkStringify, {
+        bullet: this.defaultMarkdownOptions.bulletListMarker,
+        fences: this.defaultMarkdownOptions.codeBlockStyle === 'fenced',
+        incrementListMarker: false,
+      })
+      .process(md);
+
+    return String(result).trim();
   }
 
   /**
@@ -108,11 +126,11 @@ export class WordToMarkdownConverter {
    * The process involves:
    * 1. Converting the DOCX input to HTML using mammoth.js.
    * 2. Automatically detecting and setting table headers in the HTML.
-   * 3. Converting the HTML to Markdown using Turndown with GFM plugins.
-   * 4. Linting and fixing the generated Markdown using markdownlint.
+   * 3. Converting the HTML to Markdown using the unified ecosystem with remark plugins.
+   * 4. Linting and fixing the generated Markdown using remark-lint.
    *
    * @param input - The path to the .docx file or an Buffer containing the file content.
-   * @param options - Optional configuration for mammoth and turndown.
+   * @param options - Optional configuration for mammoth and remarkStringify.
    * @returns A Promise resolving to the cleaned Markdown string.
    * @throws Error if the conversion process fails.
    */
@@ -131,8 +149,8 @@ export class WordToMarkdownConverter {
       options.mammoth,
     );
     const html = this.autoTableHeaders(mammothResult.value);
-    const md = this.htmlToMd(html, options.turndown);
-    const cleanedMd = this.lint(md);
+    const md = await this.htmlToMd(html, options.remarkStringify);
+    const cleanedMd = await this.lint(md);
     return cleanedMd;
   }
 }

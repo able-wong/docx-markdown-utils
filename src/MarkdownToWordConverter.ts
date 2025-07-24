@@ -1,14 +1,12 @@
-import MarkdownIt from 'markdown-it';
 import htmlToDocx from 'html-to-docx';
 import * as fs from 'fs/promises';
+import { MarkdownToHtmlConverter } from './MarkdownToHtmlConverter';
 
 /**
  * Options for the Markdown to Word conversion process.
  */
 interface MdToWordConvertOptions {
-  /** Options passed directly to markdown-it. */
-  markdownIt?: object;
-  /** Options passed directly to html-to-docx. */
+  /** Options passed to html-to-docx. */
   htmlToDocx?: object;
 }
 
@@ -16,7 +14,7 @@ export type { MdToWordConvertOptions };
 
 /**
  * Converts Markdown to Microsoft Word documents (.docx).
- * This utility class leverages markdown-it for Markdown to HTML conversion
+ * This utility class leverages unified/remark for Markdown to HTML conversion
  * and html-to-docx for HTML to DOCX conversion.
  *
  * Example usage:
@@ -27,21 +25,25 @@ export type { MdToWordConvertOptions };
  * ```
  */
 export class MarkdownToWordConverter {
+  private htmlConverter: MarkdownToHtmlConverter;
+
+  constructor() {
+    this.htmlConverter = new MarkdownToHtmlConverter();
+  }
+
   /**
-   * Converts Markdown to HTML using markdown-it.
+   * Converts Markdown to HTML using unified processor.
    * @param md - The Markdown string to convert.
-   * @param options - Custom markdown-it options.
    * @returns The converted HTML string.
    */
-  private mdToHtml(md: string, options: object = {}): string {
-    const mdIt = new MarkdownIt({ ...options });
-    // Override default rules for emphasis to use <i> instead of <em>
-    // This is a workaround for the issue with html-to-docx not handling <em> correctly
-    // See: https://github.com/privateOmega/html-to-docx/pull/226
-    // btw, html-to-docx does not support strikethrough but there is no fix at the moment.
-    mdIt.renderer.rules.em_open = () => '<i>';
-    mdIt.renderer.rules.em_close = () => '</i>';
-    return mdIt.render(md);
+  private mdToHtml(md: string): string {
+    let html = this.htmlConverter.convert(md);
+
+    // html-to-docx expects older HTML tags, convert semantic tags
+    html = html.replace(/<em>/g, '<i>').replace(/<\/em>/g, '</i>');
+    html = html.replace(/<del>/g, '<s>').replace(/<\/del>/g, '</s>');
+
+    return html;
   }
 
   /**
@@ -59,7 +61,7 @@ export class MarkdownToWordConverter {
     md: string,
     options: MdToWordConvertOptions = {},
   ): Promise<Buffer> {
-    const html = this.mdToHtml(md, options.markdownIt);
+    const html = this.mdToHtml(md);
     const docxResult = await htmlToDocx(
       html,
       undefined,

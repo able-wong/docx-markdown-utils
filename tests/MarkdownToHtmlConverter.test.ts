@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { MarkdownToHtmlConverter } from '../src/MarkdownToHtmlConverter';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -6,12 +7,17 @@ import { JSDOM } from 'jsdom';
 describe('MarkdownToHtmlConverter', () => {
   const resourcesDir = path.join(__dirname, 'resources', 'markdown');
   const htmlDir = path.join(__dirname, 'resources', 'html');
-  const inputFiles = fs.readdirSync(resourcesDir).filter((f) => f.endsWith('.md'));
+  const inputFiles = fs
+    .readdirSync(resourcesDir)
+    .filter((f) => f.endsWith('.md'));
 
   inputFiles.forEach((inputFile) => {
     it(`should convert ${inputFile} to HTML`, () => {
       const inputPath = path.join(resourcesDir, inputFile);
-      const expectedHtmlPath = path.join(htmlDir, inputFile.replace(/\.md$/, '.html'));
+      const expectedHtmlPath = path.join(
+        htmlDir,
+        inputFile.replace(/\.md$/, '.html'),
+      );
       const md = fs.readFileSync(inputPath, 'utf-8');
       const converter = new MarkdownToHtmlConverter();
       const html = converter.convert(md);
@@ -24,9 +30,12 @@ describe('MarkdownToHtmlConverter', () => {
     const md = '# Hello\n\nThis is **bold** and _italic_.';
     const converter = new MarkdownToHtmlConverter();
     const html = converter.convert(md);
-    const expectedHtml = '<h1>Hello</h1>\n<p>This is <strong>bold</strong> and <i>italic</i>.</p>';
+    const expectedHtml =
+      '<h1>Hello</h1>\n<p>This is <strong>bold</strong> and <em>italic</em>.</p>';
     const domActual = new JSDOM(html);
     const domExpected = new JSDOM(expectedHtml);
-    expect(domActual.window.document.body.innerHTML.trim()).toBe(domExpected.window.document.body.innerHTML.trim());
+    expect(domActual.window.document.body.innerHTML.trim()).toBe(
+      domExpected.window.document.body.innerHTML.trim(),
+    );
   });
 });

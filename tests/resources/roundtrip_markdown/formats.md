@@ -1,1 +1,1 @@
-This is **bold** text, _italic_ text, strikethrough text, underline text.
+This is **bold** text, *italic* text, strikethrough text, underline text.
