@@ -207,18 +207,27 @@ This is **bold** and *italic* text.
             function convertMarkdown() {
                 const markdown = markdownInput.value;
                 if (!markdown.trim()) {
-                    htmlPreview.innerHTML = '<em>No markdown input</em>';
+                    const emptyMessage = document.createElement('em');
+                    emptyMessage.textContent = 'No markdown input';
+                    htmlPreview.innerHTML = '';
+                    htmlPreview.appendChild(emptyMessage);
                     htmlSource.textContent = '';
                     return;
                 }
                 
                 try {
                     const html = converter.convert(markdown);
+                    // Display HTML as rendered content in preview (this is safe since we control the converter)
                     htmlPreview.innerHTML = html;
+                    // Show raw HTML as code
                     htmlSource.textContent = html;
                 } catch (error) {
                     console.error('HTML conversion error:', error);
-                    htmlPreview.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'error';
+                    errorMessage.textContent = `Error: ${error.message}`;
+                    htmlPreview.innerHTML = '';
+                    htmlPreview.appendChild(errorMessage);
                     htmlSource.textContent = '';
                 }
             }
@@ -229,22 +238,30 @@ This is **bold** and *italic* text.
             // ArrayBuffer test
             document.getElementById('testArrayBuffer').addEventListener('click', () => {
                 const results = testArrayBufferDetection();
-                document.getElementById('arrayBufferResult').innerHTML = results.join('<br>');
+                const resultDiv = document.getElementById('arrayBufferResult');
+                resultDiv.innerHTML = ''; // Clear previous content
+                results.forEach(result => {
+                    const resultLine = document.createElement('div');
+                    resultLine.textContent = result;
+                    resultDiv.appendChild(resultLine);
+                });
             });
             
             // Initial conversion
             convertMarkdown();
             
             // Show success message
-            document.body.insertAdjacentHTML('afterbegin', 
-                '<div class="success">✅ Simple browser test loaded successfully! Basic functionality is working.</div>'
-            );
+            const successBanner = document.createElement('div');
+            successBanner.className = 'success';
+            successBanner.textContent = '✅ Simple browser test loaded successfully! Basic functionality is working.';
+            document.body.insertBefore(successBanner, document.body.firstChild);
             
         } catch (error) {
             console.error('Failed to initialize test:', error);
-            document.body.insertAdjacentHTML('afterbegin', 
-                `<div class="error">❌ Failed to initialize: ${error.message}</div>`
-            );
+            const errorBanner = document.createElement('div');
+            errorBanner.className = 'error';
+            errorBanner.textContent = `❌ Failed to initialize: ${error.message}`;
+            document.body.insertBefore(errorBanner, document.body.firstChild);
         }
     </script>
 </body>

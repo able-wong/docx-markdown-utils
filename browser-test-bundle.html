@@ -141,7 +141,11 @@ console.log('Hello World');
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                docxStatus.innerHTML = '<div class="success">Processing file...</div>';
+                const processingMessage = document.createElement('div');
+                processingMessage.className = 'success';
+                processingMessage.textContent = 'Processing file...';
+                docxStatus.innerHTML = '';
+                docxStatus.appendChild(processingMessage);
                 markdownOutput.value = '';
                 
                 try {
@@ -153,11 +157,19 @@ console.log('Hello World');
                     const markdown = await wordToMdConverter.convert(arrayBuffer);
                     
                     markdownOutput.value = markdown;
-                    docxStatus.innerHTML = `<div class="success">✅ Successfully converted ${file.name}</div>`;
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'success';
+                    successMessage.textContent = `✅ Successfully converted ${file.name}`;
+                    docxStatus.innerHTML = '';
+                    docxStatus.appendChild(successMessage);
                     
                 } catch (error) {
                     console.error('Conversion error:', error);
-                    docxStatus.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'error';
+                    errorMessage.textContent = `❌ Error: ${error.message}`;
+                    docxStatus.innerHTML = '';
+                    docxStatus.appendChild(errorMessage);
                 }
             });
             
@@ -169,18 +181,26 @@ console.log('Hello World');
             function convertMarkdown() {
                 const markdown = markdownInput.value;
                 if (!markdown.trim()) {
-                    htmlPreview.innerHTML = '<em>No markdown input</em>';
+                    const emptyMessage = document.createElement('em');
+                    emptyMessage.textContent = 'No markdown input';
+                    htmlPreview.innerHTML = '';
+                    htmlPreview.appendChild(emptyMessage);
                     htmlSource.textContent = '';
                     return;
                 }
                 
                 try {
                     const html = mdToHtmlConverter.convert(markdown);
-                    htmlPreview.innerHTML = html;
+                    // Only show HTML as code, don't render it
+                    htmlPreview.textContent = html;
                     htmlSource.textContent = html;
                 } catch (error) {
                     console.error('HTML conversion error:', error);
-                    htmlPreview.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'error';
+                    errorMessage.textContent = `Error: ${error.message}`;
+                    htmlPreview.innerHTML = '';
+                    htmlPreview.appendChild(errorMessage);
                     htmlSource.textContent = '';
                 }
             }
@@ -192,15 +212,17 @@ console.log('Hello World');
             convertMarkdown();
             
             // Show success message
-            document.body.insertAdjacentHTML('afterbegin', 
-                '<div class="success">✅ Browser bundle loaded successfully! Both converters are ready to use.</div>'
-            );
+            const successBanner = document.createElement('div');
+            successBanner.className = 'success';
+            successBanner.textContent = '✅ Browser bundle loaded successfully! Both converters are ready to use.';
+            document.body.insertBefore(successBanner, document.body.firstChild);
             
         } catch (error) {
             console.error('Failed to load browser bundle:', error);
-            document.body.insertAdjacentHTML('afterbegin', 
-                `<div class="error">❌ Failed to load browser bundle: ${error.message}</div>`
-            );
+            const errorBanner = document.createElement('div');
+            errorBanner.className = 'error';
+            errorBanner.textContent = `❌ Failed to load browser bundle: ${error.message}`;
+            document.body.insertBefore(errorBanner, document.body.firstChild);
         }
     </script>
 </body>
