@@ -50,6 +50,9 @@
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.28.1"
+  },
   "dependencies": {
     "@types/html-to-docx": "^1.8.0",
     "html-to-docx": "^1.8.0",
