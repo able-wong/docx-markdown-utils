@@ -9,9 +9,7 @@ export default {
     file: 'dist/browser.bundle.js',
     format: 'iife',
     name: 'DocxMarkdownUtils',
-    globals: {
-      // Map any external dependencies to global variables if needed
-    },
+    inlineDynamicImports: true, // Inline dynamic imports to avoid code-splitting
   },
   plugins: [
     json(),
@@ -19,7 +17,7 @@ export default {
       browser: true,
       preferBuiltins: false,
     }),
-    commonjs(),
+    commonjs(), // Still needed for some ESM dependencies that import CommonJS modules
     terser({
       compress: {
         drop_console: false, // Keep console.log for debugging
@@ -55,10 +53,7 @@ export default {
       },
     }),
   ],
-  external: [
-    // Keep these as external since they need to be loaded separately
-    // or can't be bundled properly
-  ],
+  external: [],
   onwarn(warning, warn) {
     // Suppress circular dependency warnings from node_modules
     if (
@@ -68,21 +63,8 @@ export default {
     ) {
       return;
     }
-    // Suppress warnings about Node.js built-in modules
-    if (
-      [
-        'fs',
-        'fs/promises',
-        'path',
-        'https',
-        'http',
-        'stream',
-        'zlib',
-        'crypto',
-        'url',
-        'buffer',
-      ].includes(warning.code)
-    ) {
+    // Suppress warnings about eval usage from dependencies
+    if (warning.code === 'EVAL') {
       return;
     }
     warn(warning);

@@ -1,6 +1,6 @@
 {
   "name": "docx-markdown-utils",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Utilities for converting between DOCX and Markdown formats",
   "keywords": [
     "markdown",
@@ -31,6 +31,9 @@
       "types": "./dist/browser.d.ts"
     },
     "./bundle": "./dist/browser.bundle.js"
+  },
+  "browser": {
+    "./dist/index.js": "./dist/browser.js"
   },
   "scripts": {
     "test": "vitest run",
@@ -80,7 +83,8 @@
     "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   },
   "dependencies": {
-    "@turbodocx/html-to-docx": "^1.13.4",
+    "@m2d/remark-docx": "^0.1.0",
+    "docx": "^9.5.1",
     "mammoth": "^1.9.0",
     "node-html-parser": "^7.0.1",
     "rehype-parse": "^9.0.1",
