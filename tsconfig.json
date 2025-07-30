@@ -7,8 +7,6 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
@@ -18,7 +16,7 @@
     ],
     "moduleResolution": "Node",
     "allowImportingTsExtensions": false,
-    "noEmit": false,
+    "noEmit": true,
     "isolatedModules": true
   },
   "include": [
