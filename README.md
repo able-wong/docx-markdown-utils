@@ -142,6 +142,21 @@ Modern frameworks will automatically use the correct browser-compatible version 
 import { WordToMarkdownConverter, MarkdownToWordConverter, MarkdownToHtmlConverter } from 'docx-markdown-utils';
 ```
 
+**Remix/Vite Configuration (Required)**
+
+For Remix and Vite projects, add this configuration to handle mixed ESM/CommonJS dependencies:
+
+```javascript
+// vite.config.js
+export default {
+  optimizeDeps: {
+    include: ["docx-markdown-utils"], // Required for CommonJS compatibility
+  }
+}
+```
+
+**Why needed:** Despite the v0.5.0 migration to ESM-native dependencies, some sub-dependencies in the chain still use CommonJS and require explicit bundling for proper module resolution.
+
 #### Standalone Browser Bundle
 
 For use in vanilla JavaScript projects, you can use the standalone bundle which includes all necessary dependencies.
