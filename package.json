@@ -41,7 +41,7 @@
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:dual": "npm run test:node && npm run test:browser",
     "serve": "python3 -m http.server 8000",
-    "build": "tsc && npm run build:bundle",
+    "build": "tsc -p tsconfig.build.json && npm run build:bundle",
     "build:bundle": "rollup -c",
     "lint": "eslint src --ext .ts,.js",
     "lint:fix": "eslint src --ext .ts,.js --fix",
