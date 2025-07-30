@@ -147,7 +147,7 @@ import { WordToMarkdownConverter, MarkdownToWordConverter, MarkdownToHtmlConvert
 For Remix and Vite projects, add this configuration to handle mixed ESM/CommonJS dependencies:
 
 ```javascript
-// vite.config.js
+// vite.config.js or vite.config.ts
 export default {
   optimizeDeps: {
     include: ["docx-markdown-utils"], // Required for CommonJS compatibility
