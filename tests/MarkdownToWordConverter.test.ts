@@ -14,15 +14,27 @@ describe('MarkdownToWordConverter', () => {
 
   // Use roundtrip_markdown files for test comparison
   // Due to libraries restriction, some details or additions are different.
-  const inputFiles = fs.readdirSync(inputDir).filter((f) => f.endsWith('.md'));
-  inputFiles.forEach((inputFile) => {
+  const inputFiles = fs.readdirSync(inputDir);
+  const mdFiles = inputFiles.filter((f) => f.endsWith('.md'));
+
+  mdFiles.forEach((inputFile) => {
     it(`should convert ${inputFile} to docx and back to markdown with round-trip fidelity`, async () => {
       const inputPath = path.join(inputDir, inputFile);
       const roundtripPath = path.join(roundtripDir, inputFile);
       const originalMd = fs.readFileSync(inputPath, 'utf-8').trim();
       const expectedMd = fs.readFileSync(roundtripPath, 'utf-8').trim();
       const mdToWord = new MarkdownToWordConverter();
-      const docxBuffer = await mdToWord.convert(originalMd);
+      const docxResult = await mdToWord.convert(originalMd);
+
+      let docxBuffer: Buffer;
+      if (docxResult instanceof Blob) {
+        docxBuffer = Buffer.from(await docxResult.arrayBuffer());
+      } else if (docxResult instanceof ArrayBuffer) {
+        docxBuffer = Buffer.from(docxResult);
+      } else {
+        docxBuffer = docxResult;
+      }
+
       expect(Buffer.isBuffer(docxBuffer)).toBe(true);
       expect(docxBuffer.length).toBeGreaterThan(0);
 
@@ -30,8 +42,6 @@ describe('MarkdownToWordConverter', () => {
       const wordToMd = new WordToMarkdownConverter();
       const roundTripMd = (await wordToMd.convert(docxBuffer)).trim();
 
-      // Compare after normalizing whitespace
-      // expect(roundTripMd).toBe(expectedMd);
       // Compare as HTML using JSDOM
       const mdToHtml = new MarkdownToHtmlConverter();
       const actualHtml = mdToHtml.convert(roundTripMd);
@@ -44,18 +54,28 @@ describe('MarkdownToWordConverter', () => {
     });
   });
 
-  it('should save DOCX buffer to a local file using saveToFile', async () => {
+  it('should convert markdown and allow saving the resulting buffer to a file', async () => {
     const mdToWord = new MarkdownToWordConverter();
-    const testMd = '# Test SaveToFile';
-    const docxBuffer = await mdToWord.convert(testMd);
+    const testMd = '# Test File Saving';
+    const docxResult = await mdToWord.convert(testMd);
     const tmpFile = path.join(
       os.tmpdir(),
       'test_saveToFile_' + Date.now() + '.docx',
     );
-    await mdToWord.saveToFile(docxBuffer, tmpFile);
-    expect(fs.existsSync(tmpFile)).toBe(true);
-    const stat = fs.statSync(tmpFile);
-    expect(stat.size).toBeGreaterThan(0);
+
+    let docxBuffer: Buffer;
+    if (docxResult instanceof Blob) {
+      docxBuffer = Buffer.from(await docxResult.arrayBuffer());
+    } else if (docxResult instanceof ArrayBuffer) {
+      docxBuffer = Buffer.from(docxResult);
+    } else {
+      docxBuffer = docxResult;
+    }
+
+    fs.writeFileSync(tmpFile, docxBuffer);
+
+    const stats = fs.statSync(tmpFile);
+    expect(stats.size).toBeGreaterThan(0);
     fs.unlinkSync(tmpFile); // Clean up
   });
 });

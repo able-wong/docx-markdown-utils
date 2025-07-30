@@ -2,94 +2,22 @@
 
 [![Lint and Test](https://github.com/able-wong/docx-markdown-utils/actions/workflows/lint_and_test.yml/badge.svg)](https://github.com/able-wong/docx-markdown-utils/actions/workflows/lint_and_test.yml)
 
-A modern Node.js library for converting between Microsoft Word (.docx) documents and [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/). Built with ES modules and the unified ecosystem for reliable, high-quality conversions.
+A modern, isomorphic library for converting between Microsoft Word (.docx), Markdown, and HTML. It works seamlessly in both Node.js and browser environments.
 
 ## Features
 
-- **ES Module Only**: Modern ES module package (requires Node.js ≥18.0.0)
-- **Three Main Classes**: Convert between DOCX, Markdown, and HTML formats
-- **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists
-- **Unified Ecosystem**: Built on [unified](https://unifiedjs.com/) and [remark](https://remark.js.org/) for consistent processing
-- **TypeScript Support**: Full TypeScript definitions included
-- **High Test Coverage**: Comprehensive test suite with 93%+ coverage
+- **Isomorphic**: All converter classes work in both Node.js and browser environments.
+- **ES Module Only**: Modern ES module package (requires Node.js ≥18.0.0).
+- **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists.
+- **Customizable DOCX Output**: Pass options to control fonts, font sizes, and margins in generated `.docx` files.
+- **TypeScript Support**: Full TypeScript definitions included.
+- **High Test Coverage**: Comprehensive test suite with dual-environment testing.
 
 ### Supported Classes
 
-- **`WordToMarkdownConverter`**: Converts Word documents to Markdown ✅ **Dual Environment** (Node.js + Browser)
-- **`MarkdownToWordConverter`**: Converts Markdown files to Word documents (Node.js only)
-- **`MarkdownToHtmlConverter`**: Converts Markdown strings to HTML ✅ **Dual Environment** (Node.js + Browser)
-
-## Browser Compatibility
-
-**Dual Environment Classes**: `WordToMarkdownConverter` and `MarkdownToHtmlConverter` work in both Node.js and browser environments.
-
-**Node.js Only**: `MarkdownToWordConverter` requires Node.js due to file system dependencies. See class documentation for browser alternatives.
-
-### Browser Usage Options
-
-The library provides multiple ways to use it in browser environments:
-
-#### Option 1: Framework Integration (Recommended)
-Modern frameworks like Remix, Next.js, or Vite automatically handle conditional exports:
-
-```typescript
-// Only imports browser-compatible classes
-import { WordToMarkdownConverter, MarkdownToHtmlConverter } from 'docx-markdown-utils';
-```
-
-#### Option 2: Direct Browser Import
-For ES module environments with a bundler:
-
-```typescript
-// Explicit browser import
-import { WordToMarkdownConverter, MarkdownToHtmlConverter } from 'docx-markdown-utils/browser';
-```
-
-#### Option 3: CDN Usage (Vanilla JavaScript)
-For vanilla JavaScript projects without a bundler:
-
-```html
-<!-- Latest version via jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/npm/docx-markdown-utils@latest/dist/browser.bundle.js"></script>
-<script>
-  const { WordToMarkdownConverter, MarkdownToHtmlConverter } = window.DocxMarkdownUtils;
-  // Use the converters...
-</script>
-```
-
-### Browser Testing
-
-To test the browser compatibility locally:
-
-1. **Build the project**:
-   ```bash
-   npm run build
-   ```
-
-2. **Start a local HTTP server**:
-   ```bash
-   npm run serve
-   ```
-
-3. **Choose a test page**:
-   ```bash
-   # Bundle test (standalone, no CDN dependencies)
-   open http://localhost:8000/browser-test-bundle.html
-   
-   # Import maps test (loads dependencies from CDN)
-   open http://localhost:8000/browser-test.html
-   
-   # Simple test (minimal dependencies, fallback)
-   open http://localhost:8000/browser-test-simple.html
-   ```
-
-**Expected Results**: Both converters work seamlessly in browser environments, with automatic File API integration for `.docx` uploads.
-
-### Known Limitations
-
-- **Strikethrough in Round-trip Conversion**: When converting `~~strikethrough~~` markdown to DOCX and back to markdown, the strikethrough formatting is lost due to limitations in the underlying `html-to-docx` library. The text content is preserved but without formatting.
-- **Ordered List Numbering**: In round-trip conversion (Markdown → DOCX → Markdown), sequential ordered list numbering is lost. For example, `1.`, `2.`, `3.` becomes `1.`, `1.`, `1.`. List structure and content are preserved.
-- **Underline**: Underline formatting is not supported as it's not part of standard Markdown or GFM.
+- **`WordToMarkdownConverter`**: Converts Word documents to Markdown.
+- **`MarkdownToWordConverter`**: Converts Markdown to Word documents.
+- **`MarkdownToHtmlConverter`**: Converts Markdown to HTML.
 
 ## Installation
 
@@ -99,8 +27,8 @@ npm install docx-markdown-utils
 
 **Requirements:**
 
-- Node.js ≥18.0.0
-- ES Module environment (`"type": "module"` in package.json or `.mjs` files)
+- Node.js ≥18.0.0 (for server-side use)
+- An ES Module-compatible environment.
 
 ## Usage
 
@@ -114,12 +42,12 @@ import fs from 'fs';
 
 const converter = new WordToMarkdownConverter();
 
-// From file path (Node.js only)
+// From file path
 const markdown = await converter.convert('path/to/input.docx');
 
-// From Buffer (Node.js)
+// From Buffer
 const docxBuffer = fs.readFileSync('path/to/input.docx');
-const markdown = await converter.convert(docxBuffer);
+const markdownFromBuffer = await converter.convert(docxBuffer);
 
 console.log(markdown);
 ```
@@ -131,41 +59,67 @@ import { WordToMarkdownConverter } from 'docx-markdown-utils';
 
 const converter = new WordToMarkdownConverter();
 
-// From File input element
-const fileInput = document.getElementById('docxFile') as HTMLInputElement;
+// From a File input element
+const fileInput = document.getElementById('docxFile');
 const file = fileInput.files[0];
 const arrayBuffer = await file.arrayBuffer();
 const markdown = await converter.convert(arrayBuffer);
 
-// From drag and drop
-const handleDrop = async (event: DragEvent) => {
-  const file = event.dataTransfer?.files[0];
-  if (file && file.name.endsWith('.docx')) {
-    const arrayBuffer = await file.arrayBuffer();
-    const markdown = await converter.convert(arrayBuffer);
-    console.log(markdown);
-  }
-};
+console.log(markdown);
 ```
 
 ### Convert Markdown to Word
 
+#### Node.js Environment
+
 ```typescript
 import { MarkdownToWordConverter } from 'docx-markdown-utils';
+import * as fs from 'fs/promises';
 
 const converter = new MarkdownToWordConverter();
+const markdownContent = '# Hello World';
 
-// Convert markdown string to DOCX buffer
-const markdownContent = '# Hello **World**!\n\nThis is *italic* text.';
-const docxBuffer: Buffer = await converter.convert(markdownContent);
+// The result is a Buffer
+const docx = await converter.convert(markdownContent);
+await fs.writeFile('document.docx', docx);
+```
 
-// Save to file
-await converter.saveToFile(docxBuffer, 'path/to/output.docx');
+#### Browser Environment
+
+```typescript
+import { MarkdownToWordConverter } from 'docx-markdown-utils';
+import { saveAs } from 'file-saver'; // Example using file-saver
+
+const converter = new MarkdownToWordConverter();
+const markdownContent = '## Hello from the browser!';
+
+// The result is a Blob
+const docx = await converter.convert(markdownContent);
+saveAs(docx, 'document.docx');
+```
+
+#### Customizing the .docx Output
+
+You can pass options to customize the appearance of the generated `.docx` file. This is useful for setting default fonts, font sizes, and page margins.
+
+```typescript
+const options = {
+  htmlToDocx: {
+    font: 'Arial',
+    fontSize: 24, // 12pt
+    margins: {
+      top: 1440,    // 1 inch
+      right: 1440,  // 1 inch
+      bottom: 1440, // 1 inch
+      left: 1440,   // 1 inch
+    },
+  },
+};
+
+const docx = await converter.convert(markdownContent, options);
 ```
 
 ### Convert Markdown to HTML
-
-#### Works in Both Node.js and Browser
 
 ```typescript
 import { MarkdownToHtmlConverter } from 'docx-markdown-utils';
@@ -173,67 +127,48 @@ import { MarkdownToHtmlConverter } from 'docx-markdown-utils';
 const converter = new MarkdownToHtmlConverter();
 const html = converter.convert('# Hello, **world**!');
 console.log(html); // <h1>Hello, <strong>world</strong>!</h1>
-
-// Browser-specific usage
-const markdownText = '# Document\n\nFrom **browser** input';
-const htmlOutput = converter.convert(markdownText);
-
-// Create downloadable HTML file in browser
-const blob = new Blob([htmlOutput], { type: 'text/html' });
-const url = URL.createObjectURL(blob);
 ```
 
-## API
+## Browser Usage
 
-### WordToMarkdownConverter
+The library is designed to be easily integrated into any modern web project.
 
-**Methods:**
+#### Framework Integration (Vite, Next.js, etc.)
 
-- `convert(input: string | Buffer | ArrayBuffer, options?: ConvertOptions): Promise<string>`
-  - Converts a DOCX file to Markdown
-  - `input`: File path (string, Node.js only), Buffer (Node.js), or ArrayBuffer (browser/Node.js)
-  - `options`: Optional conversion options for remarkStringify behavior
+Modern frameworks will automatically use the correct browser-compatible version of the library.
 
-**Types:**
+```typescript
+import { WordToMarkdownConverter, MarkdownToWordConverter, MarkdownToHtmlConverter } from 'docx-markdown-utils';
+```
 
-- `ConvertOptions`: Configuration for markdown conversion
-- `TurndownOptions`: Options for HTML-to-Markdown conversion behavior
+#### Standalone Browser Bundle
 
-### MarkdownToWordConverter
+For use in vanilla JavaScript projects, you can use the standalone bundle which includes all necessary dependencies.
 
-**Methods:**
+```html
+<!-- Latest version via jsDelivr CDN -->
+<script src="https://cdn.jsdelivr.net/npm/docx-markdown-utils@latest/dist/browser.bundle.js"></script>
+<script>
+  const { WordToMarkdownConverter, MarkdownToWordConverter } = window.DocxMarkdownUtils;
+  // Use the converters...
+</script>
+```
 
-- `convert(md: string, options?: MdToWordConvertOptions): Promise<Buffer>`
-  - Converts Markdown string to DOCX Buffer
-  - `md`: Markdown content as string
-  - `options`: Optional configuration for conversion
-- `saveToFile(buffer: Buffer, outputPath: string): Promise<void>`
-  - Saves DOCX Buffer to file
+To test the browser bundle locally, run `npm run serve` and open `browser-test-bundle.html`.
 
-**Types:**
+## What's New
 
-- `MdToWordConvertOptions`: Configuration for markdown-to-word conversion
+### v0.4.0 (Latest)
 
-### MarkdownToHtmlConverter
+- **🚀 `MarkdownToWordConverter` is now Isomorphic**: The `MarkdownToWordConverter` class now works in both Node.js and browser environments, returning a `Buffer` in Node and a `Blob` in the browser.
+- **✨ Customizable DOCX Output**: Added the ability to pass options for font, font size, and margins when creating `.docx` files.
+- **🔧 Switched to `@turbodocx/html-to-docx`**: Replaced the underlying `html-to-docx` library with the more modern and actively maintained `@turbodocx/html-to-docx`.
+- **🧹 Cleaner API**: Removed the `saveToFile` method in favor of returning a standard `Buffer` or `Blob` that can be handled by the user.
+- **📚 Improved Documentation**: Updated the README to reflect the new isomorphic nature of all classes and added examples for customizing `.docx` output.
 
-**Methods:**
+## Previous Releases
 
-- `convert(md: string): string`
-  - Converts Markdown string to HTML using unified/remark with GFM support
-  - `md`: Markdown content as string
-  - Returns HTML string
-
-**Constructor:**
-
-- `constructor(options?: MdToHtmlConvertOptions)`
-  - `options`: Optional configuration for the unified processor
-
-**Types:**
-
-- `MdToHtmlConvertOptions`: Configuration for markdown-to-HTML conversion
-
-## What's New in v0.3.0
-
+### v0.3.1
 - **🌐 Dual Environment Support**: `WordToMarkdownConverter` and `MarkdownToHtmlConverter` now work in both Node.js and browsers
 - **📦 Conditional Exports**: Automatic browser/Node.js environment detection for frameworks like Remix and Next.js
 - **🎯 Browser Bundle**: Standalone bundle for vanilla JavaScript usage via CDN (jsDelivr)
@@ -242,45 +177,12 @@ const url = URL.createObjectURL(blob);
 - **📚 Improved Documentation**: Multiple browser usage options with framework-specific examples
 - **🔍 Better Type Detection**: Enhanced input type validation and error handling
 
-## Previous Releases
-
 ### v0.2.0
-
 - **🚀 ES Module Support**: Complete migration to ES modules
 - **🔧 Unified Ecosystem**: Replaced multiple dependencies with unified/remark stack
 - **✨ Better Output**: More semantic HTML (`<em>` vs `<i>`) and cleaner markdown formatting
 - **🧪 Modern Testing**: Migrated from Jest to Vitest with native ES module support
 - **📦 Smaller Bundle**: Consolidated dependencies for better tree-shaking
-
-### Migration from v0.1.x
-
-**Breaking Changes:**
-
-1. **ES Modules Only**: Update your project to use ES modules
-
-   ```json
-   // package.json
-   {
-     "type": "module"
-   }
-   ```
-
-2. **Import Syntax**: Use ES module imports instead of CommonJS
-
-   ```typescript
-   // Before (v0.1.x)
-   const { WordToMarkdownConverter } = require('docx-markdown-utils');
-
-   // After (v0.2.x)
-   import { WordToMarkdownConverter } from 'docx-markdown-utils';
-   ```
-
-3. **Node.js Version**: Requires Node.js ≥18.0.0 (previously ≥14.0.0)
-
-4. **Output Format Changes**:
-   - Italic text now uses `*italic*` instead of `_italic_`
-   - Table formatting has longer separator lines
-   - List items have improved spacing
 
 ## License
 

@@ -1,6 +1,7 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
+import json from '@rollup/plugin-json';
 
 export default {
   input: 'dist/browser.js',
@@ -13,6 +14,7 @@ export default {
     },
   },
   plugins: [
+    json(),
     nodeResolve({
       browser: true,
       preferBuiltins: false,
@@ -63,6 +65,23 @@ export default {
       warning.code === 'CIRCULAR_DEPENDENCY' &&
       warning.id &&
       warning.id.includes('node_modules')
+    ) {
+      return;
+    }
+    // Suppress warnings about Node.js built-in modules
+    if (
+      [
+        'fs',
+        'fs/promises',
+        'path',
+        'https',
+        'http',
+        'stream',
+        'zlib',
+        'crypto',
+        'url',
+        'buffer',
+      ].includes(warning.code)
     ) {
       return;
     }

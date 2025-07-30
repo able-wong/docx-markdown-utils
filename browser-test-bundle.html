@@ -91,7 +91,7 @@
     <div class="section">
         <h2>📝 Markdown to HTML Converter</h2>
         <p>Type Markdown text to see it converted to HTML:</p>
-        <textarea id="markdownInput" placeholder="Type Markdown here...
+        <textarea id="markdownToHtmlInput" placeholder="Type Markdown here...
 # Sample Heading
 
 This is **bold** and *italic* text.
@@ -117,17 +117,29 @@ console.log('Hello World');
         <pre id="htmlSource"></pre>
     </div>
 
+    <div class="section">
+        <h2>📝 Markdown to Word Converter</h2>
+        <p>Type Markdown text to convert it to a .docx file Blob:</p>
+        <textarea id="markdownToWordInput" placeholder="Type Markdown here...
+# Hello Word!
+
+This will be converted to a .docx file."></textarea>
+        <button id="convertToWord">Convert to .docx</button>
+        <div id="wordStatus"></div>
+    </div>
+
     <script src="./dist/browser.bundle.js"></script>
     <script>
         try {
             // Access the global DocxMarkdownUtils object created by the bundle
-            const { WordToMarkdownConverter, MarkdownToHtmlConverter } = window.DocxMarkdownUtils;
+            const { WordToMarkdownConverter, MarkdownToHtmlConverter, MarkdownToWordConverter } = window.DocxMarkdownUtils;
             
             console.log('✅ Successfully loaded browser bundle');
             
             // Initialize converters
             const wordToMdConverter = new WordToMarkdownConverter();
             const mdToHtmlConverter = new MarkdownToHtmlConverter();
+            const mdToWordConverter = new MarkdownToWordConverter();
             
             // Word to Markdown functionality
             const docxFileInput = document.getElementById('docxFile');
@@ -171,11 +183,11 @@ console.log('Hello World');
             });
             
             // Markdown to HTML functionality
-            const markdownInput = document.getElementById('markdownInput');
+            const markdownToHtmlInput = document.getElementById('markdownToHtmlInput');
             const htmlSource = document.getElementById('htmlSource');
             
-            function convertMarkdown() {
-                const markdown = markdownInput.value;
+            function convertMarkdownToHtml() {
+                const markdown = markdownToHtmlInput.value;
                 if (!markdown.trim()) {
                     htmlSource.textContent = '';
                     return;
@@ -190,16 +202,54 @@ console.log('Hello World');
                 }
             }
             
+            // Markdown to Word functionality
+            const markdownToWordInput = document.getElementById('markdownToWordInput');
+            const convertToWordButton = document.getElementById('convertToWord');
+            const wordStatus = document.getElementById('wordStatus');
+
+            convertToWordButton.addEventListener('click', async () => {
+                const markdown = markdownToWordInput.value;
+                if (!markdown.trim()) {
+                    wordStatus.innerHTML = '<div class="error">Please enter some Markdown.</div>';
+                    return;
+                }
+
+                wordStatus.innerHTML = '<div class="success">Converting...</div>';
+
+                try {
+                    const docxBlob = await mdToWordConverter.convert(markdown);
+                    wordStatus.innerHTML = `<div class="success">✅ Successfully created a .docx Blob. Size: ${docxBlob.size} bytes. Starting download...</div>`;
+                    
+                    // Create a temporary link to trigger the download
+                    const url = URL.createObjectURL(docxBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'document.docx';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Clean up the temporary link and URL
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    }, 0);
+
+                } catch (error) {
+                    console.error('Word conversion error:', error);
+                    wordStatus.textContent = `❌ Error: ${error.message}`;
+                }
+            });
+
             // Convert on input change
-            markdownInput.addEventListener('input', convertMarkdown);
+            markdownToHtmlInput.addEventListener('input', convertMarkdownToHtml);
             
             // Initial conversion with placeholder text
-            convertMarkdown();
+            convertMarkdownToHtml();
             
             // Show success message
             const successBanner = document.createElement('div');
             successBanner.className = 'success';
-            successBanner.textContent = '✅ Browser bundle loaded successfully! Both converters are ready to use.';
+            successBanner.textContent = '✅ Browser bundle loaded successfully! All converters are ready to use.';
             document.body.insertBefore(successBanner, document.body.firstChild);
             
         } catch (error) {
