@@ -155,7 +155,7 @@ export default {
 }
 ```
 
-**Why needed:** Despite the v0.5.0 migration to ESM-native dependencies, some sub-dependencies in the chain still use CommonJS and require explicit bundling for proper module resolution.
+**Why needed:** While v0.5.0 migrated to ESM-native dependencies, some sub-dependencies remain CommonJS. This requires them to be explicitly included in Vite's `optimizeDeps` for proper module resolution.
 
 #### Standalone Browser Bundle
 
