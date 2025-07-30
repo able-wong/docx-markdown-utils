@@ -62,7 +62,8 @@ export type { MdToWordConvertOptions };
  * - **Better Remix/Vite Compatibility**: No bundling issues with html-to-vdom
  */
 export class MarkdownToWordConverter {
-  private processor: ReturnType<typeof unified>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private processor: any;
 
   constructor() {
     this.processor = unified()
