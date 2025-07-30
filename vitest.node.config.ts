@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.test.ts', 'tests/**/*.node.test.ts'],
     exclude: ['tests/**/*.browser.test.ts'],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.ts'],

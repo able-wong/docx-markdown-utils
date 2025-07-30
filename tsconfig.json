@@ -25,7 +25,8 @@
     "rollup.config.js",
     "vitest.config.ts",
     "vitest.browser.config.ts",
-    "vitest.node.config.ts"
+    "vitest.node.config.ts",
+    "vitest.setup.ts"
   ],
   "exclude": [
     "node_modules"
