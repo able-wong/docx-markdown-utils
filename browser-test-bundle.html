@@ -236,7 +236,7 @@ This will be converted to a .docx file."></textarea>
 
                 } catch (error) {
                     console.error('Word conversion error:', error);
-                    wordStatus.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                    wordStatus.textContent = `❌ Error: ${error.message}`;
                 }
             });
 
