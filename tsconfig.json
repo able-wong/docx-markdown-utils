@@ -22,7 +22,12 @@
     "isolatedModules": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*.ts",
+    "rollup.config.js",
+    "vitest.config.ts",
+    "vitest.browser.config.ts",
+    "vitest.node.config.ts"
   ],
   "exclude": [
     "node_modules"

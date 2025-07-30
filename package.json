@@ -1,6 +1,6 @@
 {
   "name": "docx-markdown-utils",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Utilities for converting between DOCX and Markdown formats",
   "keywords": [
     "markdown",
@@ -53,6 +53,10 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.25.1",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
@@ -69,9 +73,6 @@
     "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
     "rollup": "^4.28.1",
-    "@rollup/plugin-node-resolve": "^15.3.1",
-    "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
@@ -79,8 +80,7 @@
     "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   },
   "dependencies": {
-    "@types/html-to-docx": "^1.8.0",
-    "html-to-docx": "^1.8.0",
+    "@turbodocx/html-to-docx": "^1.13.4",
     "mammoth": "^1.9.0",
     "node-html-parser": "^7.0.1",
     "rehype-parse": "^9.0.1",
