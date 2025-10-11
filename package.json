@@ -85,7 +85,7 @@
   "dependencies": {
     "@m2d/remark-docx": "^0.1.0",
     "docx": "^9.5.1",
-    "mammoth": "^1.9.0",
+    "mammoth": "^1.11.0",
     "node-html-parser": "^7.0.1",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
