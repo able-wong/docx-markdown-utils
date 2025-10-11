@@ -7,7 +7,7 @@ A modern, isomorphic library for converting between Microsoft Word (.docx), Mark
 ## Features
 
 - **Isomorphic**: All converter classes work in both Node.js and browser environments.
-- **ES Module Only**: Modern ES module package (requires Node.js ≥18.0.0).
+- **ES Module Only**: Modern ES module package (requires Node.js ≥20.0.0).
 - **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists.
 - **Customizable DOCX Output**: Pass options to control fonts, font sizes, and margins in generated `.docx` files.
 - **TypeScript Support**: Full TypeScript definitions included.
@@ -27,7 +27,7 @@ npm install docx-markdown-utils
 
 **Requirements:**
 
-- Node.js ≥18.0.0 (for server-side use)
+- Node.js ≥20.0.0 (for server-side use)
 - An ES Module-compatible environment.
 
 ## Usage
