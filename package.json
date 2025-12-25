@@ -80,7 +80,7 @@
     "vitest": "^3.2.4"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.28.1"
+    "@rollup/rollup-linux-x64-gnu": "^4.53.3"
   },
   "dependencies": {
     "@m2d/remark-docx": "^0.1.0",
