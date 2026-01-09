@@ -38,4 +38,15 @@ describe('MarkdownToHtmlConverter', () => {
       domExpected.window.document.body.innerHTML.trim(),
     );
   });
+
+  it('should convert hard breaks (two trailing spaces) to <br> tags', () => {
+    // Two trailing spaces before newline creates a hard break per CommonMark spec
+    const md = 'line1  \nline2  \nline3  \nline4';
+    const converter = new MarkdownToHtmlConverter();
+    const html = converter.convert(md);
+    expect(html).toContain('line1<br>');
+    expect(html).toContain('line2<br>');
+    expect(html).toContain('line3<br>');
+    expect(html).toContain('line4');
+  });
 });
