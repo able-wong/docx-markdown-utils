@@ -100,25 +100,63 @@ saveAs(docx, 'document.docx');
 
 #### Customizing the .docx Output
 
-You can pass options to customize the conversion process. Note that v0.5.0 uses `@m2d/remark-docx` for direct markdown processing.
+You can customize fonts, sizes, colors, spacing, and margins to match your needs:
 
 ```typescript
-// v0.5.0+ options (for future extensibility)
-const options = {
-  remarkDocx: {
-    // Future: Add custom remark-docx options here
-  },
-  // Legacy options (maintained for backward compatibility, but ignored)
-  htmlToDocx: {
-    font: 'Arial',
-    fontSize: 24,
-  },
-};
+const converter = new MarkdownToWordConverter();
 
-const docx = await converter.convert(markdownContent, options);
+const docx = await converter.convert(markdownContent, {
+  styles: {
+    // Body text styling
+    paragraph: {
+      font: 'Arial',
+      fontSize: 12,
+      lineSpacing: 1.5,
+      spacingAfter: 10,
+    },
+    // Heading styles (h1-h4)
+    heading1: {
+      font: 'Arial Black',
+      fontSize: 24,
+      color: '000000',  // hex without #
+      bold: true,
+    },
+    heading2: {
+      font: 'Arial',
+      fontSize: 18,
+      color: '333333',
+    },
+    // Page margins (inches)
+    margins: { top: 1, bottom: 1, left: 1.25, right: 1.25 },
+    // Document metadata
+    title: 'My Document',
+    author: 'John Doe',
+  }
+});
 ```
 
-**Note**: The new implementation produces more efficient DOCX files (~60% smaller) with improved formatting. Custom styling options will be added in future releases based on `@m2d/remark-docx` capabilities.
+**Default Styles (matching Microsoft Word):**
+- Body: Calibri 11pt, black, 1.15 line spacing
+- Heading 1: Calibri Light 20pt, blue (#2F5496)
+- Heading 2: Calibri Light 16pt, blue
+- Heading 3: Calibri Light 14pt, blue
+- Heading 4: Calibri Light 12pt, blue, italic
+- Margins: 1 inch on all sides
+
+**ParagraphStyle Options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `font` | string | Font name |
+| `fontSize` | number | Size in points |
+| `color` | string | Hex color without # |
+| `bold` | boolean | Bold text |
+| `italic` | boolean | Italic text |
+| `alignment` | string | 'left', 'center', 'right', 'justify' |
+| `lineSpacing` | number | Multiplier (1.0 = single, 1.5, 2.0 = double) |
+| `spacingBefore` | number | Points before paragraph |
+| `spacingAfter` | number | Points after paragraph |
+
+**Note:** Generated DOCX files are fully compatible with Microsoft Word. However, Word may prompt to save when closing even if no changes were made - this is normal for programmatically generated files and doesn't affect the document content.
 
 ### Convert Markdown to HTML
 
@@ -204,10 +242,20 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ## What's New
 
-### v0.5.6 (Latest)
+### v0.6.0 (Latest)
+
+- **🎨 Modern Word Styling**: Default output now matches Microsoft Word's styling (Calibri font, proper heading sizes and colors)
+- **✨ Customizable Paragraph Styles**: New `ParagraphStyle` interface for fine-grained control over fonts, sizes, colors, alignment, and spacing
+- **📝 Heading Styles (H1-H4)**: Individual styling options for each heading level with Word-matching defaults
+- **📐 Page Margins**: Configurable page margins in inches
+- **📋 Document Metadata**: Set title, author, and description
+- **⬆️ Updated Dependencies**: `@m2d/remark-docx` upgraded to v1.2.2
+
+### v0.5.6
 
 - **📚 Enhanced MarkdownToHtmlConverter Docs**: Added supported GFM features list and usage examples
 - **🧪 Improved Test Coverage**: Added hard break conversion test with JSDOM validation
+- **🔒 Security Fixes**: Updated mammoth and other dependencies to address vulnerabilities
 
 ### v0.5.1 - v0.5.4
 

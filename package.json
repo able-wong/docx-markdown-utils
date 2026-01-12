@@ -1,6 +1,6 @@
 {
   "name": "docx-markdown-utils",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "description": "Utilities for converting between DOCX and Markdown formats",
   "keywords": [
     "markdown",
@@ -83,7 +83,7 @@
     "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   },
   "dependencies": {
-    "@m2d/remark-docx": "^0.1.0",
+    "@m2d/remark-docx": "^1.2.2",
     "docx": "^9.5.1",
     "mammoth": "^1.11.0",
     "node-html-parser": "^7.0.1",
