@@ -345,11 +345,23 @@ export class MarkdownToWordConverter {
         typeof window !== 'undefined' && typeof window.document !== 'undefined';
       const outputType = isBrowser ? 'blob' : 'nodebuffer';
 
+      // Plugin options to fix table header visibility
+      const pluginProps = {
+        table: {
+          firstRowCellProps: {
+            shading: undefined, // Remove default gold shading that renders as black
+            data: {
+              bold: true,
+            },
+          },
+        },
+      };
+
       // Create processor with styling options
       const processor = unified()
         .use(remarkParse)
         .use(remarkGfm)
-        .use(remarkDocx, outputType, docxProps, sectionProps);
+        .use(remarkDocx, outputType, docxProps, sectionProps, pluginProps);
 
       // Process the markdown through the unified pipeline
       const result = await processor.process(md);

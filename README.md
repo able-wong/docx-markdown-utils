@@ -273,7 +273,11 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ## What's New
 
-### v0.6.0 (Latest)
+### v0.6.1 (Latest)
+
+- **🐛 Fix: Table header visibility** - Fixed table headers rendering as black bars with invisible text in generated DOCX files
+
+### v0.6.0
 
 **Breaking Changes:**
 - `MarkdownToHtmlConverter`: Options moved from constructor to `convert()` method
