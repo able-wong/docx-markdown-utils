@@ -188,9 +188,9 @@ function buildDocxProps(styles: DocxStyleOptions = {}) {
   const heading4 = mergeStyles(styles.heading4, DEFAULT_HEADINGS.heading4);
 
   return {
-    title: styles.title || undefined,
-    creator: styles.author || undefined,
-    description: styles.description || undefined,
+    title: styles.title,
+    creator: styles.author,
+    description: styles.description,
     styles: {
       default: {
         document: {
@@ -231,7 +231,7 @@ function buildDocxProps(styles: DocxStyleOptions = {}) {
  * Builds section properties with page margins.
  */
 function buildSectionProps(styles: DocxStyleOptions = {}) {
-  const margins = { ...DEFAULT_MARGINS, ...styles.margins };
+  const margins = { ...DEFAULT_MARGINS, ...(styles.margins || {}) };
 
   return {
     properties: {

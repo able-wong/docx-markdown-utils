@@ -66,7 +66,7 @@ Currently only `MarkdownToWordConverter` fully follows these patterns.
 interface DocxStyleOptions {
   paragraph?: ParagraphStyle;
   heading1?: ParagraphStyle;
-  margins?: { top, bottom, left, right };
+  margins?: { top: number; bottom: number; left: number; right: number };
 }
 
 // Bad - exposing underlying library
