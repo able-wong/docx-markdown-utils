@@ -10,28 +10,21 @@ import * as mammoth from 'mammoth';
 import { parse } from 'node-html-parser';
 
 /**
- * Options for the conversion process.
+ * Options for the Word to Markdown conversion process.
  */
-interface ConvertOptions {
-  /** Options passed directly to the mammoth library. */
-  mammoth?: object;
-  /** Options passed to remark-stringify for markdown formatting. */
-  remarkStringify?: object;
-}
+export interface WordToMarkdownOptions {
+  /**
+   * The marker character to use for bullet lists.
+   * @default '-'
+   */
+  bulletListMarker?: '-' | '*' | '+';
 
-/**
- * Internal options for configuring markdown formatting behavior.
- */
-interface MarkdownFormattingOptions {
-  /** Specifies the heading style ('setext' for H1 and H2, 'atx' for all levels). */
-  headingStyle?: 'setext' | 'atx';
-  /** Specifies the code block style ('indented' or 'fenced'). */
-  codeBlockStyle?: 'indented' | 'fenced';
-  /** Specifies the marker for bullet lists ('*', '-', or '+'). */
-  bulletListMarker?: '*' | '-' | '+';
+  /**
+   * The style to use for code blocks.
+   * @default 'fenced'
+   */
+  codeBlockStyle?: 'fenced' | 'indented';
 }
-
-export type { ConvertOptions };
 
 /**
  * Converts Microsoft Word documents (.docx) to Markdown format.
@@ -42,23 +35,16 @@ export type { ConvertOptions };
  * Example usage:
  * ```typescript
  * const converter = new WordToMarkdownConverter();
- * converter.convert('tests/resources/input/formats.docx', {}).then(
- *   (result) => {
- *     console.log(result);
- *   },
- *   (error) => {
- *     console.error('Error:', error);
- *   },
- * );
+ * const markdown = await converter.convert('document.docx');
+ *
+ * // With options
+ * const markdown = await converter.convert(buffer, {
+ *   bulletListMarker: '*',
+ *   codeBlockStyle: 'fenced'
+ * });
  * ```
  */
 export class WordToMarkdownConverter {
-  private defaultMarkdownOptions: MarkdownFormattingOptions = {
-    headingStyle: 'atx',
-    codeBlockStyle: 'fenced',
-    bulletListMarker: '-',
-  };
-
   /**
    * Converts an HTML table's first row `<td>` elements to `<th>` elements.
    * This helps in generating Markdown tables with proper headers.
@@ -82,19 +68,23 @@ export class WordToMarkdownConverter {
    * Converts an HTML string to Markdown using unified processor.
    * Applies GFM support and formatting options.
    * @param html - The HTML string to convert.
-   * @param options - Custom formatting options.
+   * @param options - Formatting options.
    * @returns The converted Markdown string.
    */
-  private async htmlToMd(html: string, options: object = {}): Promise<string> {
+  private async htmlToMd(
+    html: string,
+    options: WordToMarkdownOptions = {},
+  ): Promise<string> {
+    const { bulletListMarker = '-', codeBlockStyle = 'fenced' } = options;
+
     const result = await unified()
       .use(rehypeParse, { fragment: true }) // Parse HTML fragment
       .use(rehypeRemark) // Convert HTML → Markdown AST
       .use(remarkGfm) // GitHub Flavored Markdown support
       .use(remarkStringify, {
-        bullet: this.defaultMarkdownOptions.bulletListMarker,
-        fences: this.defaultMarkdownOptions.codeBlockStyle === 'fenced',
+        bullet: bulletListMarker,
+        fences: codeBlockStyle === 'fenced',
         incrementListMarker: false,
-        ...options,
       })
       .process(html);
 
@@ -104,16 +94,22 @@ export class WordToMarkdownConverter {
   /**
    * Lint and format markdown content using unified processor.
    * @param md - The Markdown string to lint and format.
+   * @param options - Formatting options to maintain consistency.
    * @returns A Promise resolving to the cleaned Markdown string.
    */
-  private async lint(md: string): Promise<string> {
+  private async lint(
+    md: string,
+    options: WordToMarkdownOptions = {},
+  ): Promise<string> {
+    const { bulletListMarker = '-', codeBlockStyle = 'fenced' } = options;
+
     const result = await unified()
       .use(remarkParse) // Add the missing parser
       .use(remarkLint)
       .use(remarkPresetLintRecommended)
       .use(remarkStringify, {
-        bullet: this.defaultMarkdownOptions.bulletListMarker,
-        fences: this.defaultMarkdownOptions.codeBlockStyle === 'fenced',
+        bullet: bulletListMarker,
+        fences: codeBlockStyle === 'fenced',
         incrementListMarker: false,
       })
       .process(md);
@@ -130,13 +126,13 @@ export class WordToMarkdownConverter {
    * 4. Linting and fixing the generated Markdown using remark-lint.
    *
    * @param input - The path to the .docx file, a Buffer (Node.js), or an ArrayBuffer (browser) containing the file content.
-   * @param options - Optional configuration for mammoth and remarkStringify.
+   * @param options - Optional configuration for markdown formatting.
    * @returns A Promise resolving to the cleaned Markdown string.
    * @throws Error if the conversion process fails.
    */
   async convert(
     input: string | Buffer | ArrayBuffer,
-    options: ConvertOptions = {},
+    options: WordToMarkdownOptions = {},
   ): Promise<string> {
     let inputObj:
       | { path: string }
@@ -157,13 +153,10 @@ export class WordToMarkdownConverter {
         'Invalid input type. Expected string, Buffer, or ArrayBuffer.',
       );
     }
-    const mammothResult = await mammoth.convertToHtml(
-      inputObj,
-      options.mammoth,
-    );
+    const mammothResult = await mammoth.convertToHtml(inputObj);
     const html = this.autoTableHeaders(mammothResult.value);
-    const md = await this.htmlToMd(html, options.remarkStringify);
-    const cleanedMd = await this.lint(md);
+    const md = await this.htmlToMd(html, options);
+    const cleanedMd = await this.lint(md, options);
     return cleanedMd;
   }
 }

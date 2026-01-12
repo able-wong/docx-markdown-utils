@@ -2,25 +2,21 @@ import { describe, it, expect } from 'vitest';
 import { MarkdownToHtmlConverter } from '../src/MarkdownToHtmlConverter.js';
 
 describe('MarkdownToHtmlConverter Options', () => {
-  it('should pass options to remark-html plugin', () => {
-    // Test that options are being passed by using a known remark-html option
-    // Let's test with the 'sanitize' option set to false (allows raw HTML)
-    const converter = new MarkdownToHtmlConverter({
-      html: {
-        sanitize: false,
-      },
-    });
+  it('should pass options to convert method', () => {
+    const converter = new MarkdownToHtmlConverter();
 
     const markdownWithHtml = 'Hello <span style="color: red;">world</span>!';
-    const html = converter.convert(markdownWithHtml);
+    const html = converter.convert(markdownWithHtml, {
+      sanitize: false,
+      allowDangerousHtml: true,
+    });
 
-    // The exact behavior depends on remark-html version, but we should at least
-    // verify that options are being passed without throwing errors
+    // With allowDangerousHtml: true and sanitize: false, raw HTML should pass through
     expect(html).toContain('Hello');
     expect(html).toContain('world');
   });
 
-  it('should work without options (default constructor)', () => {
+  it('should work without options (default behavior)', () => {
     const converter = new MarkdownToHtmlConverter();
     const html = converter.convert('**Bold** and *italic* text.');
 
@@ -29,16 +25,50 @@ describe('MarkdownToHtmlConverter Options', () => {
   });
 
   it('should work with empty options object', () => {
-    const converter = new MarkdownToHtmlConverter({});
-    const html = converter.convert('# Hello World');
+    const converter = new MarkdownToHtmlConverter();
+    const html = converter.convert('# Hello World', {});
 
     expect(html).toContain('<h1>Hello World</h1>');
   });
 
-  it('should work with empty html options', () => {
-    const converter = new MarkdownToHtmlConverter({ html: {} });
-    const html = converter.convert('## Subtitle');
+  it('should sanitize by default', () => {
+    const converter = new MarkdownToHtmlConverter();
+    const markdownWithHtml = 'Hello <script>alert("xss")</script>world';
 
-    expect(html).toContain('<h2>Subtitle</h2>');
+    // With default sanitize: true, dangerous HTML should be escaped
+    const html = converter.convert(markdownWithHtml);
+
+    // Script tags should be escaped or removed
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('Hello');
+    expect(html).toContain('world');
+  });
+
+  it('should allow raw HTML when allowDangerousHtml is true', () => {
+    const converter = new MarkdownToHtmlConverter();
+    const markdownWithHtml = 'Hello <em>inline html</em> world';
+
+    const html = converter.convert(markdownWithHtml, {
+      allowDangerousHtml: true,
+      sanitize: false,
+    });
+
+    expect(html).toContain('<em>inline html</em>');
+  });
+
+  it('should use different options for different convert calls', () => {
+    const converter = new MarkdownToHtmlConverter();
+    const markdown = 'Test <b>bold</b> content';
+
+    // First call with default options (sanitize: true)
+    const sanitizedHtml = converter.convert(markdown);
+    expect(sanitizedHtml).not.toContain('<b>bold</b>');
+
+    // Second call with allowDangerousHtml
+    const unsanitizedHtml = converter.convert(markdown, {
+      allowDangerousHtml: true,
+      sanitize: false,
+    });
+    expect(unsanitizedHtml).toContain('<b>bold</b>');
   });
 });
