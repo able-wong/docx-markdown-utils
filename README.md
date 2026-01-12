@@ -204,7 +204,19 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ## What's New
 
-### v0.5.0 (Latest)
+### v0.5.6 (Latest)
+
+- **📚 Enhanced MarkdownToHtmlConverter Docs**: Added supported GFM features list and usage examples
+- **🧪 Improved Test Coverage**: Added hard break conversion test with JSDOM validation
+
+### v0.5.1 - v0.5.4
+
+- **🔒 Security Fix**: Updated happy-dom to v20.0.0 to address vulnerability
+- **⚠️ Node.js ≥20.0.0**: Updated minimum Node.js version requirement
+- **📦 Dependency Updates**: Updated vulnerable dependencies
+- **📚 Vite Usage Docs**: Added Remix/Vite configuration instructions
+
+### v0.5.0
 
 - **🚀 Major Architecture Upgrade**: Replaced `@turbodocx/html-to-docx` with `@m2d/remark-docx` for direct Markdown-to-DOCX conversion
 - **🎯 Eliminated CommonJS Issues**: No more bundling problems with `html-to-vdom` - perfect Remix/Vite compatibility
