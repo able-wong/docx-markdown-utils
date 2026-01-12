@@ -127,7 +127,37 @@ import { MarkdownToHtmlConverter } from 'docx-markdown-utils';
 
 const converter = new MarkdownToHtmlConverter();
 const html = converter.convert('# Hello, **world**!');
-console.log(html); // <h1>Hello, <strong>world</strong>!</h1>
+```
+
+**Supported Markdown features (GFM):**
+- Headings, bold, italic, strikethrough
+- Links and images
+- Ordered and unordered lists
+- Tables
+- Task lists
+- Code blocks and inline code
+- Hard breaks (two trailing spaces before newline → `<br>`)
+
+#### Examples
+
+```typescript
+const converter = new MarkdownToHtmlConverter();
+
+// Basic formatting
+converter.convert('**bold** and _italic_');
+// <p><strong>bold</strong> and <em>italic</em></p>
+
+// Tables
+converter.convert('| A | B |\n|---|---|\n| 1 | 2 |');
+// <table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>
+
+// Task lists
+converter.convert('- [x] Done\n- [ ] Todo');
+// <ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked disabled> Done</li>...</ul>
+
+// Hard breaks (two trailing spaces)
+converter.convert('line1  \nline2');
+// <p>line1<br>\nline2</p>
 ```
 
 ## Browser Usage
