@@ -53,13 +53,11 @@ npm run serve  # Start local server
 
 ### Options Interface
 
-Target patterns for new/updated code (see Issues #41, #42 for migration):
+All converters follow these patterns:
 
 1. **Pass options in `convert()` method**, not constructor - allows different options per call
 2. **Wrap underlying library options** - don't expose mammoth, remark-html, etc. directly
 3. **Use our own interfaces** (e.g., `DocxStyleOptions`, `ParagraphStyle`) that we control
-
-Currently only `MarkdownToWordConverter` fully follows these patterns.
 
 ```typescript
 // Good - wrapped options

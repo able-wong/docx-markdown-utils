@@ -68,6 +68,25 @@ const markdown = await converter.convert(arrayBuffer);
 console.log(markdown);
 ```
 
+#### Customizing Markdown Output
+
+You can customize the generated markdown formatting:
+
+```typescript
+const converter = new WordToMarkdownConverter();
+
+const markdown = await converter.convert('document.docx', {
+  bulletListMarker: '*',    // Use '*' instead of '-' for bullet lists
+  codeBlockStyle: 'fenced', // Use fenced (```) or 'indented' code blocks
+});
+```
+
+**WordToMarkdownOptions:**
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `bulletListMarker` | `'-'` \| `'*'` \| `'+'` | `'-'` | Character for bullet lists |
+| `codeBlockStyle` | `'fenced'` \| `'indented'` | `'fenced'` | Code block style |
+
 ### Convert Markdown to Word
 
 #### Node.js Environment
@@ -165,7 +184,19 @@ import { MarkdownToHtmlConverter } from 'docx-markdown-utils';
 
 const converter = new MarkdownToHtmlConverter();
 const html = converter.convert('# Hello, **world**!');
+
+// With options - allow raw HTML in markdown
+const htmlWithRaw = converter.convert('<div>Custom HTML</div>', {
+  allowDangerousHtml: true,
+  sanitize: false,
+});
 ```
+
+**MdToHtmlConvertOptions:**
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sanitize` | boolean | `true` | Sanitize HTML output to prevent XSS |
+| `allowDangerousHtml` | boolean | `false` | Allow raw HTML in markdown to pass through |
 
 **Supported Markdown features (GFM):**
 - Headings, bold, italic, strikethrough
@@ -244,6 +275,13 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ### v0.6.0 (Latest)
 
+**Breaking Changes:**
+- `MarkdownToHtmlConverter`: Options moved from constructor to `convert()` method
+- `MdToHtmlConvertOptions`: Now uses `sanitize` and `allowDangerousHtml` instead of `html: object`
+- `WordToMarkdownOptions`: Renamed from `ConvertOptions`, now uses `bulletListMarker` and `codeBlockStyle` instead of `mammoth` and `remarkStringify`
+
+**New Features:**
+- **🎯 Consistent API**: All converters now follow the same pattern: `converter.convert(input, options?)`
 - **🎨 Modern Word Styling**: Default output now matches Microsoft Word's styling (Calibri font, proper heading sizes and colors)
 - **✨ Customizable Paragraph Styles**: New `ParagraphStyle` interface for fine-grained control over fonts, sizes, colors, alignment, and spacing
 - **📝 Heading Styles (H1-H4)**: Individual styling options for each heading level with Word-matching defaults
