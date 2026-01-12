@@ -1,6 +1,6 @@
 {
   "name": "docx-markdown-utils",
-  "version": "0.5.4",
+  "version": "0.5.6",
   "description": "Utilities for converting between DOCX and Markdown formats",
   "keywords": [
     "markdown",
