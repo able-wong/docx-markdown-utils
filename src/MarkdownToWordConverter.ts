@@ -346,7 +346,7 @@ export class MarkdownToWordConverter {
       const outputType = isBrowser ? 'blob' : 'nodebuffer';
 
       // Plugin options to fix table header visibility
-      const pluginProps = {
+      const tableHeaderFixPluginProps = {
         table: {
           firstRowCellProps: {
             shading: undefined, // Remove default gold shading that renders as black
@@ -361,7 +361,13 @@ export class MarkdownToWordConverter {
       const processor = unified()
         .use(remarkParse)
         .use(remarkGfm)
-        .use(remarkDocx, outputType, docxProps, sectionProps, pluginProps);
+        .use(
+          remarkDocx,
+          outputType,
+          docxProps,
+          sectionProps,
+          tableHeaderFixPluginProps,
+        );
 
       // Process the markdown through the unified pipeline
       const result = await processor.process(md);
