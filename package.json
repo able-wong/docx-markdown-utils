@@ -86,7 +86,7 @@
     "@m2d/remark-docx": "^1.2.2",
     "docx": "^9.5.1",
     "mammoth": "^1.11.0",
-    "node-html-parser": "^7.0.1",
+    "node-html-parser": "^7.0.2",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
     "remark-gfm": "^4.0.1",
