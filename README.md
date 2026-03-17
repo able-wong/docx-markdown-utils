@@ -273,7 +273,11 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ## What's New
 
-### v0.6.1 (Latest)
+### v0.6.2 (Latest)
+
+- **🔒 Security**: Updated dependencies to address multiple vulnerabilities (rollup CVE-2026-27606, minimatch CVE-2026-27903, serialize-javascript GHSA-5c6j-r48x-rmvq, underscore CVE-2026-27601, lodash-es CVE-2025-13465, dompurify CVE-2026-0540)
+
+### v0.6.1
 
 - **🐛 Fix: Table header visibility** - Fixed table headers rendering as black bars with invisible text in generated DOCX files
 
