@@ -273,7 +273,11 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ## What's New
 
-### v0.6.2 (Latest)
+### v0.6.3 (Latest)
+
+- **🔒 Security**: Ran `npm audit fix` and upgraded dependencies to resolve all vulnerabilities (0 remaining)
+
+### v0.6.2
 
 - **🔒 Security**: Updated dependencies to address multiple vulnerabilities (rollup CVE-2026-27606, minimatch CVE-2026-27903, serialize-javascript GHSA-5c6j-r48x-rmvq, underscore CVE-2026-27601, lodash-es CVE-2025-13465, dompurify CVE-2026-0540)
 
