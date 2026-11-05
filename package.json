@@ -1,6 +1,6 @@
 {
   "name": "docx-markdown-utils",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "Utilities for converting between DOCX and Markdown formats",
   "keywords": [
     "markdown",
@@ -56,36 +56,36 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.25.1",
-    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/ui": "^4.1.12",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^5.2.6",
     "globals": "^16.0.0",
-    "happy-dom": "^20.0.0",
+    "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
     "rollup": "^4.28.1",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.12"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   },
   "dependencies": {
-    "@m2d/remark-docx": "^1.2.2",
-    "docx": "^9.5.1",
-    "mammoth": "^1.11.0",
+    "@m2d/remark-docx": "^1.5.1",
+    "docx": "^9.15.2",
+    "mammoth": "^1.13.0",
     "node-html-parser": "^7.0.1",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
@@ -98,7 +98,7 @@
     "unified": "^11.0.5"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.13.0"
   },
   "lint-staged": {
     "*.{js,ts}": "eslint --fix"
