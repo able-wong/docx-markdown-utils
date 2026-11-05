@@ -234,6 +234,9 @@ function buildSectionProps(styles: DocxStyleOptions = {}) {
   const margins = { ...DEFAULT_MARGINS, ...(styles.margins || {}) };
 
   return {
+    // Without this, @m2d/core maps # to the Word Title style and shifts every
+    // other heading down one level. It is only read from section props.
+    useTitle: false,
     properties: {
       page: {
         margin: {

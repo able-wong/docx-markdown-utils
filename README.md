@@ -273,32 +273,13 @@ To test the browser bundle locally, run `npm run serve` and open `browser-test-b
 
 ## Known Limitations
 
-### Markdown to DOCX heading levels are shifted
-
-`MarkdownToWordConverter` writes headings one Word style lower than their Markdown level, so `# Heading` becomes the Word Title style rather than Heading 1 ([#58](https://github.com/able-wong/docx-markdown-utils/issues/58)):
-
-| Markdown | Word style |
-| -------- | ---------- |
-| `# Heading` | Title |
-| `## Heading` | Heading 1 |
-| `### Heading` | Heading 2 |
-| `#### Heading` | Heading 3 |
-| `##### Heading` | Heading 4 |
-| `###### Heading` | Heading 5 |
-
-This has two visible effects:
-
-- **Style options apply one level down.** `styles.heading1` styles `##` headings, `styles.heading2` styles `###`, and so on. No option styles the Title used for `#`.
-- **Round trips change heading levels.** When a document created by `MarkdownToWordConverter` is converted back, `# Title` returns as `[]()Title` and `## Sub` returns as `# []()Sub`.
-
-`WordToMarkdownConverter` is not affected: Word documents using Heading 1 through Heading 6 convert to the correct `#` through `######` levels.
-
 ### Round-trip conversion is lossy
 
-Converting Markdown to DOCX and back to Markdown also loses other formatting:
+Converting Markdown to DOCX and back to Markdown loses some formatting:
 
 | Original Markdown | After round trip |
 | ----------------- | ---------------- |
+| `# Heading` | `# []()Heading` (an empty link is added before the text) |
 | `1. first` | `- first` (numbered lists become bullets) |
 | `` `code` `` and fenced code blocks | Plain text |
 | `> quote` | Plain text |
@@ -306,9 +287,18 @@ Converting Markdown to DOCX and back to Markdown also loses other formatting:
 
 Images and raw HTML are also dropped when converting Markdown to DOCX in Node.js, and mermaid diagrams are not rendered there.
 
+### Browser bundle requires UTF-8
+
+`dist/browser.bundle.js` contains non-ASCII characters, so the page must be served as UTF-8. Add `<meta charset="utf-8">` to your HTML, otherwise the script fails with `SyntaxError: Invalid or unexpected token`.
+
 ## What's New
 
-### v0.7.0 (Latest)
+### v0.8.0 (Latest)
+
+- **⚠️ Breaking: Markdown to DOCX heading levels fixed**: `#` through `######` now map to Word Heading 1 through Heading 6. Previously `#` became the Word Title style and every other heading was one level too low. Headings in generated documents change style and size, and `#` now uses the `heading1` defaults (20pt, previously 28pt Title)
+- **🎨 Style options**: `styles.heading1` through `styles.heading4` now apply to `#` through `####`. If you adjusted these to work around the shift, move each setting up one level
+
+### v0.7.0
 
 - **🔒 Security**: Upgraded dependencies to resolve all critical and high vulnerabilities (`@m2d/remark-docx` 1.5.1, `docx` 9.15.2, `mammoth` 1.13.0, `vitest` 4, `happy-dom` 21). 13 low/moderate advisories remain with no compatible upstream fix (`katex` via `@m2d/math`, plus build-only `minimatch` and `deepmerge`)
 - **⚠️ Breaking: Node.js ≥22.13.0**: Dropped Node.js 20 (end-of-life); CI now tests Node.js 22, 24, and 26
