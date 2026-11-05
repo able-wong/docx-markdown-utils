@@ -7,7 +7,7 @@ A modern, isomorphic library for converting between Microsoft Word (.docx), Mark
 ## Features
 
 - **Isomorphic**: All converter classes work in both Node.js and browser environments.
-- **ES Module Only**: Modern ES module package (requires Node.js ≥20.0.0).
+- **ES Module Only**: Modern ES module package (requires Node.js ≥22.13.0).
 - **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists.
 - **Customizable DOCX Output**: Pass options to control fonts, font sizes, and margins in generated `.docx` files.
 - **TypeScript Support**: Full TypeScript definitions included.
@@ -27,7 +27,7 @@ npm install docx-markdown-utils
 
 **Requirements:**
 
-- Node.js ≥20.0.0 (for server-side use)
+- Node.js ≥22.13.0 (for server-side use)
 - An ES Module-compatible environment.
 
 ## Usage
@@ -271,9 +271,50 @@ For use in vanilla JavaScript projects, you can use the standalone bundle which 
 
 To test the browser bundle locally, run `npm run serve` and open `browser-test-bundle.html`.
 
+## Known Limitations
+
+### Markdown to DOCX heading levels are shifted
+
+`MarkdownToWordConverter` writes headings one Word style lower than their Markdown level, so `# Heading` becomes the Word Title style rather than Heading 1 ([#58](https://github.com/able-wong/docx-markdown-utils/issues/58)):
+
+| Markdown | Word style |
+| -------- | ---------- |
+| `# Heading` | Title |
+| `## Heading` | Heading 1 |
+| `### Heading` | Heading 2 |
+| `#### Heading` | Heading 3 |
+| `##### Heading` | Heading 4 |
+| `###### Heading` | Heading 5 |
+
+This has two visible effects:
+
+- **Style options apply one level down.** `styles.heading1` styles `##` headings, `styles.heading2` styles `###`, and so on. No option styles the Title used for `#`.
+- **Round trips change heading levels.** When a document created by `MarkdownToWordConverter` is converted back, `# Title` returns as `[]()Title` and `## Sub` returns as `# []()Sub`.
+
+`WordToMarkdownConverter` is not affected: Word documents using Heading 1 through Heading 6 convert to the correct `#` through `######` levels.
+
+### Round-trip conversion is lossy
+
+Converting Markdown to DOCX and back to Markdown also loses other formatting:
+
+| Original Markdown | After round trip |
+| ----------------- | ---------------- |
+| `1. first` | `- first` (numbered lists become bullets) |
+| `` `code` `` and fenced code blocks | Plain text |
+| `> quote` | Plain text |
+| Table header cells | Bold text (`**a**`) |
+
+Images and raw HTML are also dropped when converting Markdown to DOCX in Node.js, and mermaid diagrams are not rendered there.
+
 ## What's New
 
-### v0.6.3 (Latest)
+### v0.7.0 (Latest)
+
+- **🔒 Security**: Upgraded dependencies to resolve all critical and high vulnerabilities (`@m2d/remark-docx` 1.5.1, `docx` 9.15.2, `mammoth` 1.13.0, `vitest` 4, `happy-dom` 21). 13 low/moderate advisories remain with no compatible upstream fix (`katex` via `@m2d/math`, plus build-only `minimatch` and `deepmerge`)
+- **⚠️ Breaking: Node.js ≥22.13.0**: Dropped Node.js 20 (end-of-life); CI now tests Node.js 22, 24, and 26
+- **📦 Browser bundle**: `dist/browser.bundle.js` grew from 4.6 MB to 6.4 MB (1.3 MB to 1.8 MB gzipped) due to the `@m2d/remark-docx` upgrade
+
+### v0.6.3
 
 - **🔒 Security**: Ran `npm audit fix` and upgraded dependencies to resolve all vulnerabilities (0 remaining)
 

@@ -135,9 +135,7 @@ export class WordToMarkdownConverter {
     options: WordToMarkdownOptions = {},
   ): Promise<string> {
     let inputObj:
-      | { path: string }
-      | { buffer: Buffer }
-      | { arrayBuffer: ArrayBuffer };
+      { path: string } | { buffer: Buffer } | { arrayBuffer: ArrayBuffer };
     if (typeof input === 'string') {
       inputObj = { path: input };
     } else if (

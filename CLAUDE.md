@@ -3,7 +3,7 @@
 ## Tech Stack
 
 - **Language**: TypeScript (ES Modules only)
-- **Runtime**: Node.js ≥20.0.0, Browser (isomorphic)
+- **Runtime**: Node.js ≥22.13.0, Browser (isomorphic)
 - **Build**: TypeScript compiler + Rollup (browser bundle)
 - **Testing**: Vitest
 - **Linting**: ESLint + Prettier
