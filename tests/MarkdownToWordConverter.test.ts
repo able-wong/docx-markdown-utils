@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { MarkdownToWordConverter } from '../src/MarkdownToWordConverter';
+import {
+  MarkdownToWordConverter,
+  selectDocxPlugins,
+} from '../src/MarkdownToWordConverter';
 import { WordToMarkdownConverter } from '../src/WordToMarkdownConverter';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -178,5 +181,95 @@ describe('MarkdownToWordConverter', () => {
         );
       }
     });
+  });
+
+  describe('default plugins in Node.js', () => {
+    it('should convert emoji shortcodes', async () => {
+      const docx = await new MarkdownToWordConverter().convert('Hi :smile:');
+
+      const xml = await readDocxPart(docx, 'word/document.xml');
+
+      expect(xml).toContain('Hi 😄');
+    });
+
+    it('should keep $…$ as literal text', async () => {
+      const docx = await new MarkdownToWordConverter().convert('Math $x^2$');
+
+      const xml = await readDocxPart(docx, 'word/document.xml');
+
+      expect(xml).toContain('Math $x^2$');
+      expect(xml).not.toContain('<m:oMath');
+    });
+
+    it('should write a mermaid block as plain code text', async () => {
+      const docx = await new MarkdownToWordConverter().convert(
+        '```mermaid\ngraph TD; A-->B;\n```',
+      );
+
+      const xml = await readDocxPart(docx, 'word/document.xml');
+
+      expect(xml).toContain('graph TD; A--&gt;B;');
+      expect(xml).not.toContain('<w:drawing');
+    });
+
+    it('should ignore browser-only features', async () => {
+      const docx = await new MarkdownToWordConverter().convert(
+        '```mermaid\ngraph TD; A-->B;\n```',
+        { features: { mermaid: true, images: true } },
+      );
+
+      const xml = await readDocxPart(docx, 'word/document.xml');
+
+      expect(xml).not.toContain('<w:drawing');
+    });
+  });
+});
+
+describe('selectDocxPlugins', () => {
+  it('should use list, table and emoji in Node.js', () => {
+    expect(selectDocxPlugins({ isBrowser: false })).toEqual([
+      'list',
+      'table',
+      'emoji',
+    ]);
+  });
+
+  it('should ignore features in Node.js', () => {
+    expect(
+      selectDocxPlugins({
+        isBrowser: false,
+        features: { mermaid: true, images: true },
+      }),
+    ).toEqual(['list', 'table', 'emoji']);
+  });
+
+  it('should add html in the browser', () => {
+    expect(selectDocxPlugins({ isBrowser: true })).toEqual([
+      'html',
+      'list',
+      'table',
+      'emoji',
+    ]);
+  });
+
+  it('should add image last when images is enabled', () => {
+    expect(
+      selectDocxPlugins({ isBrowser: true, features: { images: true } }),
+    ).toEqual(['html', 'list', 'table', 'emoji', 'image']);
+  });
+
+  it('should run mermaid first and enable image when mermaid is enabled', () => {
+    expect(
+      selectDocxPlugins({ isBrowser: true, features: { mermaid: true } }),
+    ).toEqual(['mermaid', 'html', 'list', 'table', 'emoji', 'image']);
+  });
+
+  it('should treat features set to false as off', () => {
+    expect(
+      selectDocxPlugins({
+        isBrowser: true,
+        features: { mermaid: false, images: false },
+      }),
+    ).toEqual(['html', 'list', 'table', 'emoji']);
   });
 });

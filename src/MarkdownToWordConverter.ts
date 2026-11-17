@@ -1,7 +1,12 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
-import { remarkDocx } from '@m2d/remark-docx';
+import type { Root } from 'mdast';
+import { toDocx, type IPlugin, type ISectionProps } from '@m2d/core';
+import { emojiPlugin } from '@m2d/emoji';
+import { htmlPlugin } from '@m2d/html';
+import { listPlugin } from '@m2d/list';
+import { tablePlugin } from '@m2d/table';
 import { convertInchesToTwip } from 'docx';
 
 /**
@@ -59,13 +64,87 @@ export interface DocxStyleOptions {
 }
 
 /**
+ * Optional, heavier features of the Markdown to Word conversion.
+ *
+ * Each feature is loaded on demand with a dynamic `import()`, so bundlers put
+ * it in its own chunk and apps that leave it off never download it.
+ * Both features need a browser DOM and are ignored in Node.js.
+ */
+export interface MdToWordFeatures {
+  /** Render ```mermaid code blocks as diagrams (adds ~4.6 MB minified). Implies `images`. */
+  mermaid?: boolean;
+  /** Embed images referenced by `![alt](url)`. */
+  images?: boolean;
+}
+
+/**
  * Options for the Markdown to Word conversion process.
  */
 export interface MdToWordConvertOptions {
   /** Styling options for the DOCX output. */
   styles?: DocxStyleOptions;
+  /** Opt-in features. All are off by default. */
+  features?: MdToWordFeatures;
   /** @deprecated Legacy options for @turbodocx/html-to-docx compatibility. Ignored. */
   htmlToDocx?: object;
+}
+
+/** Names of the conversion plugins the converter can enable. */
+export type DocxPluginName =
+  'mermaid' | 'html' | 'list' | 'table' | 'emoji' | 'image';
+
+/**
+ * Decides which conversion plugins to run, in the order they must run.
+ *
+ * - list, table and emoji always run.
+ * - html, image and mermaid need a DOM, so they only run in the browser.
+ *   In Node.js, raw HTML, images and diagrams are dropped (unchanged from 0.8.0).
+ * - mermaid emits SVG nodes that only the image plugin turns into Word
+ *   drawings, so it must run before image and enabling it enables image.
+ */
+export function selectDocxPlugins(input: {
+  isBrowser: boolean;
+  features?: MdToWordFeatures;
+}): DocxPluginName[] {
+  const { isBrowser, features = {} } = input;
+  const mermaid = isBrowser && features.mermaid === true;
+  const image = isBrowser && (features.images === true || mermaid);
+
+  const names: DocxPluginName[] = [];
+  if (mermaid) names.push('mermaid');
+  if (isBrowser) names.push('html');
+  names.push('list', 'table', 'emoji');
+  if (image) names.push('image');
+  return names;
+}
+
+/** Table options: drop the default gold header shading, which renders as black. */
+const TABLE_PLUGIN_OPTIONS = {
+  firstRowCellProps: {
+    shading: undefined,
+    data: { bold: true },
+  },
+};
+
+/**
+ * Creates a plugin instance. mermaid and image are imported dynamically so they
+ * stay out of the main bundle unless a caller enables them.
+ */
+async function createDocxPlugin(name: DocxPluginName): Promise<IPlugin> {
+  switch (name) {
+    case 'mermaid':
+      return (await import('@m2d/mermaid')).mermaidPlugin();
+    case 'image':
+      return (await import('@m2d/image')).imagePlugin();
+    case 'html':
+      return htmlPlugin();
+    case 'list':
+      return listPlugin();
+    case 'table':
+      return tablePlugin(TABLE_PLUGIN_OPTIONS);
+    case 'emoji':
+      return emojiPlugin();
+  }
 }
 
 /** Default body paragraph style matching modern Microsoft Word */
@@ -230,10 +309,14 @@ function buildDocxProps(styles: DocxStyleOptions = {}) {
 /**
  * Builds section properties with page margins.
  */
-function buildSectionProps(styles: DocxStyleOptions = {}) {
+function buildSectionProps(
+  plugins: IPlugin[],
+  styles: DocxStyleOptions = {},
+): ISectionProps {
   const margins = { ...DEFAULT_MARGINS, ...(styles.margins || {}) };
 
   return {
+    plugins,
     // Without this, @m2d/core maps # to the Word Title style and shifts every
     // other heading down one level. It is only read from section props.
     useTitle: false,
@@ -253,7 +336,7 @@ function buildSectionProps(styles: DocxStyleOptions = {}) {
 /**
  * Converts Markdown to Microsoft Word documents (.docx).
  * This utility class leverages unified/remark for direct Markdown to DOCX conversion
- * using @m2d/remark-docx, eliminating the need for HTML intermediate conversion.
+ * using @m2d/core, eliminating the need for HTML intermediate conversion.
  *
  * This class is designed to be isomorphic, meaning it can run in both Node.js
  * and browser environments.
@@ -318,8 +401,7 @@ function buildSectionProps(styles: DocxStyleOptions = {}) {
  * - **Modern Word Defaults**: Calibri font with proper heading sizes matching Microsoft Word
  * - **Customizable Styling**: Paragraph and heading styles with font, size, color, spacing options
  * - **ESM-Native Dependencies**: No CommonJS compatibility issues
- * - **Smaller Output Files**: More efficient DOCX generation
- * - **Better Remix/Vite Compatibility**: No bundling issues with html-to-vdom
+ * - **Opt-in Heavy Features**: Mermaid diagrams and images load on demand via `features`
  */
 export class MarkdownToWordConverter {
   /**
@@ -328,7 +410,7 @@ export class MarkdownToWordConverter {
    *
    * The process involves:
    * 1. Parsing Markdown to MDAST (Markdown Abstract Syntax Tree).
-   * 2. Converting MDAST directly to DOCX using @m2d/remark-docx.
+   * 2. Converting MDAST directly to DOCX using @m2d/core and its plugins.
    *
    * @param md - The Markdown string to convert.
    * @param options - Optional configuration for the conversion including styling.
@@ -340,45 +422,22 @@ export class MarkdownToWordConverter {
     options: MdToWordConvertOptions = {},
   ): Promise<Buffer | Blob> {
     try {
-      const docxProps = buildDocxProps(options.styles);
-      const sectionProps = buildSectionProps(options.styles);
-
-      // Detect environment for output type
       const isBrowser =
         typeof window !== 'undefined' && typeof window.document !== 'undefined';
       const outputType = isBrowser ? 'blob' : 'nodebuffer';
 
-      // Plugin options to fix table header visibility
-      const tableHeaderFixPluginProps = {
-        table: {
-          firstRowCellProps: {
-            shading: undefined, // Remove default gold shading that renders as black
-            data: {
-              bold: true,
-            },
-          },
-        },
-      };
+      const plugins = await Promise.all(
+        selectDocxPlugins({ isBrowser, features: options.features }).map(
+          createDocxPlugin,
+        ),
+      );
+      const docxProps = buildDocxProps(options.styles);
+      const sectionProps = buildSectionProps(plugins, options.styles);
 
-      // Create processor with styling options
-      const processor = unified()
-        .use(remarkParse)
-        .use(remarkGfm)
-        .use(
-          remarkDocx,
-          outputType,
-          docxProps,
-          sectionProps,
-          tableHeaderFixPluginProps,
-        );
+      const processor = unified().use(remarkParse).use(remarkGfm);
+      const tree = (await processor.run(processor.parse(md))) as Root;
 
-      // Process the markdown through the unified pipeline
-      const result = await processor.process(md);
-
-      // The result.result is a Promise that resolves to the DOCX data
-      const docx = await result.result;
-
-      // Return the DOCX as Buffer (Node.js) or Blob (browser)
+      const docx = await toDocx(tree, docxProps, sectionProps, outputType);
       return docx as Buffer | Blob;
     } catch (error) {
       const errorMessage =

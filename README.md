@@ -10,6 +10,8 @@ A modern, isomorphic library for converting between Microsoft Word (.docx), Mark
 - **ES Module Only**: Modern ES module package (requires Node.js ≥22.13.0).
 - **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists.
 - **Customizable DOCX Output**: Pass options to control fonts, font sizes, and margins in generated `.docx` files.
+- **Per-Converter Imports**: Import a single converter (e.g. `docx-markdown-utils/markdown-to-html`) so your bundle only includes what you use.
+- **Opt-in Mermaid Diagrams and Images**: Render mermaid diagrams and embed images in generated `.docx` files in the browser. They are loaded only when enabled, so they don't add to your bundle otherwise.
 - **TypeScript Support**: Full TypeScript definitions included.
 - **High Test Coverage**: Comprehensive test suite with dual-environment testing.
 
@@ -175,6 +177,29 @@ const docx = await converter.convert(markdownContent, {
 | `spacingBefore` | number | Points before paragraph |
 | `spacingAfter` | number | Points after paragraph |
 
+#### Mermaid Diagrams and Images (Browser Only)
+
+Mermaid diagrams and embedded images are off by default, because the diagram renderer alone adds about 4.6 MB (minified) to your app. Turn them on per call:
+
+```typescript
+const docx = await converter.convert(markdownContent, {
+  features: {
+    mermaid: true, // render ```mermaid blocks as diagrams (also turns on images)
+    images: true,  // embed ![alt](url) images
+  },
+});
+```
+
+Each feature is loaded with a dynamic `import()` the first time it is used, so bundlers put it in a separate chunk that apps leaving it off never download. Both need a browser DOM and are ignored in Node.js. With a feature off, a mermaid block is written as a code block and an image is dropped.
+
+Emoji shortcodes (`:smile:` → 😄) are always converted. Inline raw HTML (`<b>`, `<u>`, …) is converted in the browser only.
+
+**MdToWordFeatures:**
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mermaid` | boolean | `false` | Render mermaid code blocks as diagrams; implies `images` |
+| `images` | boolean | `false` | Embed images referenced by `![alt](url)` |
+
 **Note:** Generated DOCX files are fully compatible with Microsoft Word. However, Word may prompt to save when closing even if no changes were made - this is normal for programmatically generated files and doesn't affect the document content.
 
 ### Convert Markdown to HTML
@@ -241,6 +266,25 @@ Modern frameworks will automatically use the correct browser-compatible version 
 import { WordToMarkdownConverter, MarkdownToWordConverter, MarkdownToHtmlConverter } from 'docx-markdown-utils';
 ```
 
+**Import only the converter you need**
+
+Importing from the package root brings in all three converters. Import a single converter from its subpath to keep your bundle small:
+
+```typescript
+import { MarkdownToHtmlConverter } from 'docx-markdown-utils/markdown-to-html';
+import { WordToMarkdownConverter } from 'docx-markdown-utils/word-to-markdown';
+import { MarkdownToWordConverter } from 'docx-markdown-utils/markdown-to-word';
+```
+
+Approximate sizes when bundled for the browser (esbuild, minified, v0.9.0):
+
+| Import | Gzipped |
+|--------|---------|
+| `docx-markdown-utils/markdown-to-html` | 52 KB |
+| `docx-markdown-utils/markdown-to-word` | 152 KB (mermaid and images load separately, only when enabled) |
+| `docx-markdown-utils/word-to-markdown` | 297 KB |
+| `docx-markdown-utils` (all three) | 425 KB |
+
 **Remix/Vite Configuration (Required)**
 
 For Remix and Vite projects, add this configuration to handle mixed ESM/CommonJS dependencies:
@@ -271,6 +315,8 @@ For use in vanilla JavaScript projects, you can use the standalone bundle which 
 
 To test the browser bundle locally, run `npm run serve` and open `browser-test-bundle.html`.
 
+**Note:** the standalone bundle is mainly for quick local testing and is not size-optimized. It packs every dynamically imported module into one file, so it still contains mermaid (about 6.5 MB minified) even though mermaid only runs when `features.mermaid` is on. Use a bundler with the subpath imports above for production apps.
+
 ## Known Limitations
 
 ### Round-trip conversion is lossy
@@ -287,13 +333,25 @@ Converting Markdown to DOCX and back to Markdown loses some formatting:
 
 Images and raw HTML are also dropped when converting Markdown to DOCX in Node.js, and mermaid diagrams are not rendered there.
 
+### Markdown to Word needs a secure context in the browser
+
+`MarkdownToWordConverter` uses `crypto.randomUUID()`, which browsers only provide over HTTPS or on `localhost`. Served over plain HTTP from another address (e.g. `http://192.168.1.20:3000`), conversion fails with `crypto.randomUUID is not a function`. Word → Markdown and Markdown → HTML are not affected.
+
 ### Browser bundle requires UTF-8
 
 `dist/browser.bundle.js` contains non-ASCII characters, so the page must be served as UTF-8. Add `<meta charset="utf-8">` to your HTML, otherwise the script fails with `SyntaxError: Invalid or unexpected token`.
 
 ## What's New
 
-### v0.8.0 (Latest)
+### v0.9.0 (Latest)
+
+- **📦 Smaller Markdown to Word**: Built directly on `@m2d/core` with only the plugins it needs. `docx-markdown-utils/markdown-to-word` bundles to about 152 KB gzipped, down from 1.7 MB, and the whole package drops from 2.0 MB to 425 KB gzipped
+- **📦 Per-converter imports**: New subpaths `docx-markdown-utils/markdown-to-html`, `/word-to-markdown` and `/markdown-to-word`, plus `"sideEffects": false` so bundlers can drop unused converters. Existing imports are unchanged
+- **⚠️ Breaking: Mermaid diagrams and images are opt-in in the browser**: Pass `features: { mermaid: true }` or `features: { images: true }` to `MarkdownToWordConverter.convert()`. Without them, a mermaid block is written as a code block and images are dropped. Node.js output is unchanged
+- **🧹 Removed unused math support**: `$…$` was never rendered as an equation (no math parser was enabled), so the `katex`/`latex-math` dependencies are gone. This also clears the remaining `katex` security advisories
+- Word output for documents without diagrams or images is unchanged from 0.8.0
+
+### v0.8.0
 
 - **⚠️ Breaking: Markdown to DOCX heading levels fixed**: `#` through `######` now map to Word Heading 1 through Heading 6. Previously `#` became the Word Title style and every other heading was one level too low. Headings in generated documents change style and size, and `#` now uses the `heading1` defaults (20pt, previously 28pt Title)
 - **🎨 Style options**: `styles.heading1` through `styles.heading4` now apply to `#` through `####`. If you adjusted these to work around the shift, move each setting up one level
