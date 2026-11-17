@@ -4,6 +4,7 @@ export { MarkdownToHtmlConverter } from './MarkdownToHtmlConverter.js';
 export type { WordToMarkdownOptions } from './WordToMarkdownConverter.js';
 export type {
   MdToWordConvertOptions,
+  MdToWordFeatures,
   DocxStyleOptions,
   ParagraphStyle,
 } from './MarkdownToWordConverter.js';
